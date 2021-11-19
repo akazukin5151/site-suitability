@@ -1,0 +1,149 @@
+{
+  "criteria": [
+    {
+      "name": "insolation",
+      "inputs": [
+        "../data/solar radiation/wc2.1_30s_srad_01.tif",
+        "../data/solar radiation/wc2.1_30s_srad_02.tif",
+        "../data/solar radiation/wc2.1_30s_srad_03.tif",
+        "../data/solar radiation/wc2.1_30s_srad_04.tif",
+        "../data/solar radiation/wc2.1_30s_srad_05.tif",
+        "../data/solar radiation/wc2.1_30s_srad_06.tif",
+        "../data/solar radiation/wc2.1_30s_srad_07.tif",
+        "../data/solar radiation/wc2.1_30s_srad_08.tif",
+        "../data/solar radiation/wc2.1_30s_srad_09.tif",
+        "../data/solar radiation/wc2.1_30s_srad_10.tif",
+        "../data/solar radiation/wc2.1_30s_srad_11.tif",
+        "../data/solar radiation/wc2.1_30s_srad_12.tif"
+      ],
+      "output": "avg insolation.tif",
+      "prep_f": "CropThenAverageRasters",
+      "std_f": {
+        "function": "SuhSigmoid",
+        "args": {
+          "midpoint": 2,
+          "spread": -5,
+          "divide": 3600
+        }
+      },
+      "weight": 0.6571
+    },
+    {
+      "name": "temp",
+      "inputs": [
+        "../data/temperature/wc2.1_30s_tavg/wc2.1_30s_tavg_01.tif",
+        "../data/temperature/wc2.1_30s_tavg/wc2.1_30s_tavg_02.tif"
+      ],
+      "output": "avg temp.tif",
+      "prep_f": "CropThenAverageRasters",
+      "std_f": {
+        "function": "Linear",
+        "args": {
+          "clamp_left": 20,
+          "clamp_right": 27.3,
+          "direction": "LessBetter"
+        }
+      },
+      "weight": 0.0838
+    },
+    {
+      "name": "slope",
+      "inputs": [
+        "elevation union.tif"
+      ],
+      "output": "slope.tif",
+      "prep_f": "Slope",
+      "std_f": {
+        "function": "SuhSigmoid",
+        "args": {
+          "midpoint": 9,
+          "spread": 3
+        }
+      },
+      "weight": 0.0799,
+      "require": {
+        "r_name": "elevation",
+        "r_inputs": [
+          "../data/srtm (elevation)/srtm_14_05/srtm_14_05.tif",
+          "../data/srtm (elevation)/srtm_14_06/srtm_14_06.tif",
+          "../data/srtm (elevation)/srtm_15_05/srtm_15_05.tif",
+          "../data/srtm (elevation)/srtm_15_06/srtm_15_06.tif"
+        ],
+        "r_output": "elevation union.tif",
+        "r_prep_f": "CropThenUnionRasters"
+      }
+    },
+    {
+      "name": "roads",
+      "inputs": [
+        "../data/major roads/1.geojson",
+        "../data/major roads/2.geojson",
+        "../data/major roads/3.geojson",
+        "../data/major roads/4.geojson",
+        "../data/major roads/5.geojson",
+        "../data/major roads/6.geojson"
+      ],
+      "output": "road_prox.tif",
+      "prep_f": "VectorProximity",
+      "std_f": {
+        "function": "Linear",
+        "args": {
+          "clamp_left": 5,
+          "clamp_right": 1600,
+          "direction": "LessBetter"
+        }
+      },
+      "weight": 0.0641
+    },
+    {
+      "name": "power",
+      "inputs": [
+        "../data/transmission lines/Transmission_Lines.shp"
+      ],
+      "output": "power_prox.tif",
+      "prep_f": "VectorProximity",
+      "std_f": {
+        "function": "Linear",
+        "args": {
+          "clamp_left": 0,
+          "clamp_right": 3000,
+          "direction": "LessBetter"
+        }
+      },
+      "weight": 0.1151
+    },
+    {
+      "name": "residential",
+      "inputs": [
+          "../data/land use/nlcd/land_use_out.tif"
+      ],
+      "output": "residential_constraint.tif",
+      "prep_f": "ResidentialProximityNew",
+      "std_f": {
+        "function": "Expr",
+        "args": {
+          "expr": "0*(A<100)+1*(A>=100)"
+        }
+      },
+      "weight": 1
+    },
+    {
+      "name": "protected",
+      "inputs": [
+        "../data/protected areas/WDPA_WDOECM_Oct2021_Public_USA_shp/WDPA_WDOECM_Oct2021_Public_USA_shp_0/WDPA_WDOECM_Oct2021_Public_USA_shp-polygons.shp",
+        "../data/protected areas/WDPA_WDOECM_Oct2021_Public_USA_shp/WDPA_WDOECM_Oct2021_Public_USA_shp_1/WDPA_WDOECM_Oct2021_Public_USA_shp-polygons.shp"
+      ],
+      "output": "protected constraint.tif",
+      "prep_f": "VectorProximity",
+      "std_f": {
+        "function": "Expr",
+        "args": {
+          "expr": "0*(A<100)+1*(A>=100)"
+        }
+      },
+      "weight": 1
+    }
+  ],
+  "constraints": [
+  ]
+}
