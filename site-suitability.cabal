@@ -3,12 +3,12 @@ version:             0.1.0.0
 -- synopsis:
 -- description:
 homepage:            https://github.com/githubuser/site-suitability#readme
-license:             BSD3
+license:             MIT or GPLv3
 license-file:        LICENSE
-author:              Author name here
-maintainer:          example@example.com
-copyright:           2021 Author name here
-category:            Web
+author:              Tsui Yik Ching
+maintainer:          tsuiyikching@protonmail.com
+copyright:           2021 Tsui Yik Ching
+category:            Geography
 build-type:          Simple
 cabal-version:       >=1.10
 extra-source-files:  README.md
