@@ -3,7 +3,7 @@ version:             0.1.0.0
 -- synopsis:
 -- description:
 homepage:            https://github.com/akazukin5151/site-suitability#readme
-license:             Other
+license:             OtherLicense
 license-file:        LICENSE
 author:              Tsui Yik Ching
 maintainer:          tsuiyikching@protonmail.com
