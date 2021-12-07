@@ -68,13 +68,7 @@ abstractRangeStandardize :: (Scientific -> Scientific -> String)
                          -> FilePath -> FilePath -> IO FilePath
 abstractRangeStandardize calc_expr i out = do
   guardFile out $ do
-    (code, stdout, stderr) <- readCmd "gdalinfo" ["-mm", "-json", i]
-    (min', max') <- case code of
-      ExitFailure _ -> print stderr >> error "Failed to get min and max values"
-      ExitSuccess -> case parseMinMax stdout of
-                       Left x -> error x
-                       Right x -> pure x
-
+    (min', max') <- getMinMax i
     print (min', max')
     when (min' == 0 && max' == 0) $
       error "both min and max are equal to 0"
@@ -99,6 +93,15 @@ abstractRangeStandardize calc_expr i out = do
   pure out
 
 -- | Higher values are better
+rangeStandardize' :: String -> String -> IO String
+rangeStandardize' i o = do
+  (min', max') <- getMinMax i
+  standardize (calc_expr min' max') i o
+  where
+    calc_expr min' max' =
+      "(A -" <> show min' <> ") / (" <> show max' <> " - " <> show min' <> ")"
+
+-- | Higher values are better
 rangeStandardize :: String -> String -> IO String
 rangeStandardize = abstractRangeStandardize calc_expr
   where
@@ -111,6 +114,16 @@ reverseRangeStandardize = abstractRangeStandardize calc_expr
   where
     calc_expr min' max' =
       "1 - ((A -" <> show min' <> ") / (" <> show max' <> " - " <> show min' <> "))"
+
+getMinMax :: String -> IO (Scientific, Scientific)
+getMinMax i = do
+    (code, stdout, stderr) <- readCmd "gdalinfo" ["-mm", "-json", i]
+    (min', max') <- case code of
+      ExitFailure _ -> print stderr >> error "Failed to get min and max values"
+      ExitSuccess -> case parseMinMax stdout of
+                       Left x -> error x
+                       Right x -> pure x
+    pure (min', max')
 
 parseMinMax :: String -> Either String (Scientific, Scientific)
 parseMinMax stdout = do

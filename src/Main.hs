@@ -3,7 +3,7 @@
 module Main where
 
 import Analysis (
-  weightCriteria, multiplyAllCriteria, rangeStandardize
+  weightCriteria, multiplyAllCriteria, rangeStandardize, rangeStandardize'
  )
 import Config (Config (..), configToCriteria, CriterionConfig (CriterionConfig))
 import qualified Config as C
@@ -45,7 +45,8 @@ main' name = do
       rasters <- sequence [ state^.result & fromJust | state <- weighted_state]
       -- TODO: range standardize
       final <- multiplyAllCriteria rasters $ out_dir </> "final.tif"
-      final_std <- rangeStandardize final $ out_dir </> "final_std.tif"
+      -- rangeStandardize doesn't work here for some reason
+      final_std <- rangeStandardize' final $ out_dir </> "final_std.tif"
       case constraints of
         Nothing -> pure ()
         Just c -> do
