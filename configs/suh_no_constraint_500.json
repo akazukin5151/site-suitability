@@ -49,7 +49,7 @@
     {
       "name": "slope",
       "inputs": [
-        "elevation union.tif"
+        "out/suh/preprocessed/elevation union.tif"
       ],
       "output": "slope.tif",
       "prep_f": "Slope",
