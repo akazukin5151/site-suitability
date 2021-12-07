@@ -54,7 +54,7 @@
     {
       "name": "slope",
       "inputs": [
-        "elevation union.tif"
+        "out/all/preprocessed/elevation union.tif"
       ],
       "output": "slope.tif",
       "prep_f": "Slope",
@@ -70,7 +70,7 @@
     {
       "name": "aspect",
       "inputs": [
-        "elevation union.tif"
+        "out/all/preprocessed/elevation union.tif"
       ],
       "output": "aspect.tif",
       "prep_f": "Aspect",
