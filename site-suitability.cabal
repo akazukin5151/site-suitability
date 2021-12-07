@@ -2,8 +2,8 @@ name:                site-suitability
 version:             0.1.0.0
 -- synopsis:
 -- description:
-homepage:            https://github.com/githubuser/site-suitability#readme
-license:             MIT or GPLv3
+homepage:            https://github.com/akazukin5151/site-suitability#readme
+license:             Other
 license-file:        LICENSE
 author:              Tsui Yik Ching
 maintainer:          tsuiyikching@protonmail.com
