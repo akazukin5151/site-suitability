@@ -21,7 +21,7 @@ processConstraints out_dir border cons =
       case constraint ^. c_require of
         Nothing -> def
         Just req -> do
-          let c = h b req r_prep_f r_inputs r_output
+          _ <- h b req r_prep_f r_inputs r_output
           def
       where
         def = h b constraint c_func c_inputs c_output

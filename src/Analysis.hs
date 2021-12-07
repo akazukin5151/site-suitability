@@ -93,13 +93,13 @@ abstractRangeStandardize calc_expr i out = do
   pure out
 
 -- | Higher values are better
-rangeStandardize' :: String -> String -> IO String
-rangeStandardize' i o = do
-  (min', max') <- getMinMax i
-  standardize (calc_expr min' max') i o
-  where
-    calc_expr min' max' =
-      "(A -" <> show min' <> ") / (" <> show max' <> " - " <> show min' <> ")"
+--rangeStandardize' :: String -> String -> IO String
+--rangeStandardize' i o = do
+--  (min', max') <- getMinMax i
+--  standardize (calc_expr min' max') i o
+--  where
+--    calc_expr min' max' =
+--      "(A -" <> show min' <> ") / (" <> show max' <> " - " <> show min' <> ")"
 
 -- | Higher values are better
 rangeStandardize :: String -> String -> IO String
