@@ -44,7 +44,6 @@ unionAllVectors is out = do
       unionStep (this_idx, i1) (next_idx, i2) =
         stepWrapper DontRemoveStepDir "unionStep"
         (\step_dir -> do
-             -- TODO: do this in the `cropVectorWithBorder` function instead?
              let no_fields_i1_ = appendFilename "_no_fields" i1
              i1_no_fields <- removeFields i1 no_fields_i1_
 
