@@ -159,11 +159,11 @@ instance FromJSON CriterionConfig where
 
 data RequireConfig =
   RequireConfig { r_name   :: String
-          , r_inputs :: [String]
-          , r_output :: String
-          , r_prep_f :: PrepFunctions
-          }
-          deriving (Generic, Show)
+                , r_inputs :: [String]
+                , r_output :: String
+                , r_prep_f :: PrepFunctions
+                }
+                deriving (Generic, Show)
 
 instance ToJSON RequireConfig where
   toEncoding = genericToEncoding $ defaultOptions { sumEncoding = UntaggedValue }
