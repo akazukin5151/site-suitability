@@ -5,6 +5,18 @@
 
 FIXME: some calculations hang
 
+- These successfully outputs a valid file but never exits. kill `qgis_process` then continue without doing anything else
+    - suh
+        - no observed incidents
+    - watson
+        - `preprocessing/avg insolation.tif`
+        - `preprocessing/residential_prox.tif`
+        - `std/protected_prox_std.tif`
+        - `std/road_prox_std.tif`
+        - `std/power_prox_std.tif`
+    - asakareh
+        - no observed incidents
+
 # Q&A
 
 - Why not use Python (rasterio) or R?
