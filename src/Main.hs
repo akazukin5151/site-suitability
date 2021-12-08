@@ -43,7 +43,6 @@ main' name = do
       let standardized_state = runStandardization processed_state
       let weighted_state = runWeights standardized_state
       rasters <- sequence [ state^.result & fromJust | state <- weighted_state]
-      -- TODO: range standardize
       final <- multiplyAllCriteria rasters $ out_dir </> "final.tif"
       final_std <- rangeStandardize' final $ out_dir </> "final_std.tif"
       case constraints of
