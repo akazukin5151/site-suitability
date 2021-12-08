@@ -144,20 +144,20 @@ vectorProximityFromUnion union_ prox_out = do
   let reproj_out = appendFilename "_reproj" union_
   union <- reprojectVector union_ reproj_out "EPSG:3857"
 
-  -- TODO is this needed for all? I think adding a small buffer for all is fine
-  -- but only for lines not polygons
-  let buf_out_ = appendFilename "_buffered" union
-  buf_out <- bufferVector 100 reproj_out buf_out_
-
-  let dummy_out_ = appendFilename "_with_dummy" buf_out
-  dummy_out <- addDummyField buf_out dummy_out_
+  let dummy_out_ = appendFilename "_with_dummy" union
+  dummy_out <- addDummyField union dummy_out_
 
   let rast_out_ = appendFilename "_rast" dummy_out
   rast_out <- rasterizePower dummy_out rast_out_
 
   rasterProximity rast_out prox_out
 
--- TODO: the difference between this and vectorProximityFromUnion is the rasterProximity at the end
+-- | The difference between this and vectorProximityFromUnion
+-- is that this one must have a buffer for lines; it doesn't make sense
+-- to constraint out a line of zero width
+-- Also the rasterization accounts for the direction: if this was a factor
+-- that would be done in the standardization step, but this is a constraint
+-- and it's better to do everything related to constraints in a single step
 vectorConstraint :: ConstraintData -> String -> String -> IO String
 vectorConstraint cons union_ out = do
   let reproj_out = appendFilename "_reproj" union_
