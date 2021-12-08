@@ -179,7 +179,9 @@ vectorizeLandUse i out = do
       , "-b"
       , "1"
       , "OUTPUT"
-      , "DN" -- TODO: make this customisable
+      -- TODO: make this customisable
+      -- not too important because it's essentially an internal detail
+      , "DN"
       ]
   pure out
 

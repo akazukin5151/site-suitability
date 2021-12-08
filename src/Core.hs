@@ -12,7 +12,6 @@ import Data.Aeson
       SumEncoding(ObjectWithSingleField, TaggedObject),
       ToJSON(toEncoding) )
 
--- | MoreBetter means more is better; LessBetter means lower is better
 data Direction = MoreBetter | LessBetter
   deriving (Generic, Show)
 
@@ -76,7 +75,8 @@ finalRasterCalculator =
   multiplyRasters
       [ "CRS='EPSG:4326'"
       -- TODO get extents; got it from insolation, which should be same as border
-      , "EXTENT='-114.808333333,-109.050000000,31.333333333,37.000000000'"
+      -- extents optional
+      --, "EXTENT='-114.808333333,-109.050000000,31.333333333,37.000000000'"
       ]
 
 rasterCalculator :: ([String] -> String) -> [String] -> String -> IO String
