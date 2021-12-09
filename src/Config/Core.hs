@@ -8,7 +8,7 @@ import Preprocessing.Combined (
   cropThenUnionRasters,
   vectorProximityFromFiles, residentialProximityNew
  )
-import Preprocessing.Core (
+import Preprocessing.Core.Raster (
   aspectFromElevation,
   slopeFromElevation,
  )

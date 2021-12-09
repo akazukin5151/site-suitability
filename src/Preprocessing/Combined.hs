@@ -1,21 +1,16 @@
 module Preprocessing.Combined where
 
 import Control.Monad (void, zipWithM_)
-import Preprocessing.Core (
-  addDummyField,
-  averageRaster,
-  cropRasterWithBorder,
-  cropRasterWithBorderExtents,
-  cropVectorWithBorder,
-  dissolveVector,
-  rasterProximity,
-  rasterizePower,
-  removeFields,
-  reprojectVector,
-  stepWrapper,
-  unionRasters,
-  unionVectors, bufferVector, aspectFromElevation, slopeFromElevation, bufferBorder
- )
+import Preprocessing.Core ( stepWrapper )
+import Preprocessing.Core.Raster
+    ( aspectFromElevation,
+      averageRaster,
+      cropRasterWithBorder,
+      cropRasterWithBorderExtents,
+      rasterProximity,
+      slopeFromElevation,
+      unionRasters )
+import Preprocessing.Core.Vector
 import System.Directory (removePathForcibly)
 import Utils (
   ShouldRemoveStepDir (DontRemoveStepDir, RemoveStepDir),

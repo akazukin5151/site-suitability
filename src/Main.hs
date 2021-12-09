@@ -8,7 +8,7 @@ import Analysis (
  )
 import Config.Combined (Config (..), configToCriteria)
 import Control.Lens ((&), (.~), (?~), (^.), (<&>))
-import Preprocessing.Core (filterVectorByField)
+import Preprocessing.Core.Vector (filterVectorByField)
 import Utils
     ( inputs,
       mkStdName,
