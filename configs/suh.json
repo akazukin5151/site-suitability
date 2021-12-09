@@ -49,7 +49,10 @@
     {
       "name": "slope",
       "inputs": [
-        "out/suh/preprocessed/elevation union.tif"
+        {
+          "type": "RequireOutput",
+          "string": "elevation union.tif"
+        }
       ],
       "output": "slope.tif",
       "prep_f": "Slope",

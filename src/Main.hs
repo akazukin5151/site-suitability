@@ -1,4 +1,5 @@
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE LambdaCase #-}
 
 module Main where
 
@@ -7,7 +8,7 @@ import Analysis (
  )
 import Config (Config (..), configToCriteria, CriterionConfig (CriterionConfig))
 import qualified Config as C
-import Control.Lens ((&), (.~), (?~), (^.))
+import Control.Lens ((&), (.~), (?~), (^.), (<&>))
 import Preprocessing.Core (filterVectorByField, cropRasterWithBorder, bufferVector)
 import Utils
 import Data.Aeson (decodeFileStrict', encodeFile)
@@ -67,20 +68,36 @@ runPreprocessing out_dir border criteria = do
   where
     g border_ criterion =
       case criterion ^. require of
-        Nothing -> criterion & result ?~ h border_ criterion prep_f inputs output
+        Nothing -> do
+          let is = criterion ^. inputs
+          -- Force all inputs into strings of filepaths that exist or error
+          let msg x =
+                "No requirements specified, but criteria with inputs "
+                <> show is <> " depends on the output of requirement" <> show x
+          let paths = is <&> (\case
+                Path y -> y
+                RequireOutput x -> error $ msg x)
+          criterion & result ?~ h border_ criterion prep_f (const paths) output
+
         Just req -> do
           -- Set result to make it do req_io first, before doing the actual io
-          -- Ignores the result of req_io as it is not a criteria but merely a step
-          -- TODO let criteria take inputs from requirement output
-          let req_io = h border_ req r_prep_f r_inputs r_output
-          let this_io = h border_ criterion prep_f inputs output
+          let req_io = h border_ req r_prep_f _r_inputs r_output
+          let is = criterion ^. inputs
+          -- Convert requirement output to this outdir (remember that
+          -- the outdir depends on the name of the current config file)
+          let paths = [ case x of
+                          Path p -> p
+                          RequireOutput o -> out_dir </> "preprocessed" </> o
+                      | x <- is
+                      ]
+          let this_io = h border_ criterion prep_f (const paths) output
           criterion & result ?~ (req_io >> this_io)
 
     h border_ obj prep_f_getter in_f_getter out_f_getter =
       prep_f_ border_ is out
         where
           prep_f_ = obj ^. prep_f_getter
-          is = obj ^. in_f_getter
+          is = in_f_getter obj
           out = out_dir </> "preprocessed" </> obj ^. out_f_getter
 
 abstract :: (Criterion -> String -> IO String) -> [Criterion] -> [Criterion]

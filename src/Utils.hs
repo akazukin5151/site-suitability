@@ -10,9 +10,13 @@ import System.Exit (ExitCode)
 import System.FilePath (replaceBaseName, takeBaseName, replaceDirectory, takeDirectory, (</>), takeExtension, (<.>))
 import System.Process (callCommand, readProcessWithExitCode)
 
+data Input = Path String
+           | RequireOutput String
+           deriving Show
+
 data Criterion =
   Criterion { _name :: String
-            , _inputs :: [String]
+            , _inputs :: [Input]
               -- ^ Can be a list of Vectors or list of Rasters
             , _output :: String
             , _prep_f :: String -> [String] -> String -> IO String

@@ -50,4 +50,5 @@ executable site-suitability
                        microlens == 0.4.*,
                        microlens-th == 0.4.*,
                        aeson >= 1.5,
-                       text >= 1.2.3
+                       text >= 1.2.3,
+                       vector >= 0.12.3.1
