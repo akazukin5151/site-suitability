@@ -94,13 +94,6 @@ residentialConstraint cons border [land_use_in] out = do
               standardize "0*(A==1)+1*(A==0)" tmp out
       )
 
-reprojectLandUse :: String -> String -> IO String
-reprojectLandUse vect_land_use_out reproj_land_use_out =
-  reprojectVector
-    reproj_land_use_out
-    vect_land_use_out
-    "EPSG:4326"
-
 vectorProximityFromUnion :: String -> String -> IO String
 vectorProximityFromUnion union_ prox_out = do
   let reproj_out = appendFilename "_reproj" union_

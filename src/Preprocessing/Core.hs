@@ -160,21 +160,6 @@ aspectCmd = gdaldem "aspect" ["-z", "111000"]
 aspectFromElevation :: a -> [String] -> String -> IO String
 aspectFromElevation _ [is] = aspectCmd is
 
-vectorizeLandUse :: String -> String -> IO String
-vectorizeLandUse i out = do
-  guardFile' out $
-    runCmd
-      "gdal_polygonize.py"
-      [ quoteDouble i
-      , quoteDouble out
-      , "-b"
-      , "1"
-      , "OUTPUT"
-      -- TODO: make this customisable
-      -- not too important because it's essentially an internal detail
-      , "DN"
-      ]
-
 bufferVector :: Double -> String -> String -> IO String
 bufferVector dist i out = do
   guardFile' out $
