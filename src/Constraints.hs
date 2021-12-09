@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 module Constraints where
 
-import Utils (Constraint, c_require, r_prep_f, r_inputs, r_output, c_func, c_inputs, c_output, guardFile, runCmd, quoteSingle, quoteDouble, Input (Path, RequireOutput))
+import Utils (Constraint, c_require, r_prep_f, r_inputs, r_output, c_func, c_inputs, c_output, runCmd, quoteSingle, quoteDouble, Input (Path, RequireOutput), guardFile')
 import Control.Lens ((^.), (<&>))
 import System.FilePath ((</>))
 import Core (finalRasterCalculator)
@@ -48,7 +48,7 @@ processConstraints out_dir border cons =
 
 multiplyFinalWithConstraint :: String -> String -> FilePath -> IO FilePath
 multiplyFinalWithConstraint f c out = do
-  guardFile out $
+  guardFile' out $
     runCmd "qgis_process"
       [ "run"
       , "qgis:rastercalculator"
@@ -61,4 +61,3 @@ multiplyFinalWithConstraint f c out = do
       , "LAYERS=" <> quoteDouble f
       , "LAYERS=" <> quoteDouble c
       ]
-  pure out

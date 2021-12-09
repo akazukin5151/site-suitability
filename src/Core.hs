@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 module Core where
 
-import Utils ( quoteSingle, quoteDouble, runCmd, guardFile )
+import Utils ( quoteSingle, quoteDouble, runCmd, guardFile' )
 import GHC.Generics (Generic)
 import Data.Aeson
     ( genericParseJSON,
@@ -54,7 +54,7 @@ customOptions = defaultOptions { sumEncoding = TaggedObject "function" "args" }
 
 multiplyRasters :: [String] -> [String] -> String -> IO String
 multiplyRasters extra is out = do
-  guardFile out $
+  guardFile' out $
     runCmd "qgis_process" $
       [ "run"
       , "qgis:rastercalculator"
@@ -63,7 +63,6 @@ multiplyRasters extra is out = do
       , "EXPRESSION=" <> quoteSingle calc_expr
       , "OUTPUT=" <> quoteSingle out
       ] <> input_cmds <> extra
-  pure out
     where
       input_cmds = ["LAYERS=" <> quoteSingle layer | layer <- is]
       layered = [quoteDouble (x <> "@1") | x <- is]
@@ -81,18 +80,16 @@ finalRasterCalculator =
 
 rasterCalculator :: ([String] -> String) -> [String] -> String -> IO String
 rasterCalculator calc_expr is out = do
-  guardFile out $
+  guardFile' out $
     runCmd "gdal_calc.py" $
       input_cmds
         <> [ "--outfile"
            , quoteDouble out
            , "--calc=" <> quoteDouble (calc_expr letters_used)
            ]
-  pure out
     where
       alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
       input_cmds = zipWith f alphabet is
       f letter i = "-" <> [letter] <> " " <> quoteDouble i
       -- Need to convert from String to [String] (but each element is a single character)
       letters_used = map (:[]) $ take (length is) alphabet
-

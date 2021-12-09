@@ -21,8 +21,7 @@ import Utils (
   ShouldRemoveStepDir (DontRemoveStepDir, RemoveStepDir),
   appendFilename,
   foldM1,
-  guardFile,
-  sequentialFilenames
+  sequentialFilenames, guardFile'
  )
 import Analysis (standardize, standardizeQGIS)
 import System.FilePath ((</>), takeDirectory)
@@ -57,7 +56,7 @@ residentialProximityNew :: String -> [String] -> FilePath -> IO FilePath
 residentialProximityNew border_output_file [land_use_in] out = do
   let out_dir = takeDirectory border_output_file
   border_buff <- bufferBorder out_dir border_output_file
-  guardFile out $
+  guardFile' out $
     void $ stepWrapper DontRemoveStepDir "residentialProximity"
       (\step_dir -> do
           let land_use_out_ = step_dir <> "/land_use_out.tif"
@@ -74,11 +73,10 @@ residentialProximityNew border_output_file [land_use_in] out = do
 
           cropRasterWithBorder border_output_file prox_out out
       )
-  pure out
 
 residentialConstraint :: ConstraintData -> String -> [String] -> FilePath -> IO FilePath
 residentialConstraint cons border [land_use_in] out = do
-  guardFile out $
+  guardFile' out $
     void $ stepWrapper DontRemoveStepDir "residentialConstraint"
       (\step_dir -> do
           -- The or operator doesn't seem to be working, so this is a hack
@@ -95,7 +93,6 @@ residentialConstraint cons border [land_use_in] out = do
               tmp <- finalRasterCalculator [out1, out2, out3] tmp_
               standardize "0*(A==1)+1*(A==0)" tmp out
       )
-  pure out
 
 reprojectLandUse :: String -> String -> IO String
 reprojectLandUse vect_land_use_out reproj_land_use_out =
@@ -146,7 +143,7 @@ vectorProximityFromFiles :: String -> [String] -> String -> IO String
 vectorProximityFromFiles border is out = do
   let out_dir = takeDirectory border
   border_buff <- bufferBorder out_dir border
-  guardFile out $
+  guardFile' out $
     void $ stepWrapper RemoveStepDir "vectorProximityFromFiles"
       (\step_dir -> do
           let union_out = step_dir <> "/step_union.shp"
@@ -156,55 +153,50 @@ vectorProximityFromFiles border is out = do
           prox_out <- vectorProximityFromUnion union_out_vec prox_out_
           cropRasterWithBorder border prox_out out
       )
-  pure out
 
 vectorConstraintFromFiles :: ConstraintData -> String -> [String] -> FilePath -> IO FilePath
 vectorConstraintFromFiles cons border is prox_out = do
-  guardFile prox_out $
+  guardFile' prox_out $
     void $ stepWrapper RemoveStepDir "vectorConstraintFromFiles"
       (\step_dir -> do
           let union_out = step_dir <> "/step_union.shp"
           union_out_vec <- cropThenUnionVectors border is union_out
           vectorConstraint cons union_out_vec prox_out
       )
-  pure prox_out
 
 cropThenUnionVectors :: String -> [String] -> String -> IO String
 cropThenUnionVectors border is out = do
-  guardFile out $
+  guardFile' out $
     void $ stepWrapper RemoveStepDir "cropThenUnionVectors"
       (\step_dir -> do
           let os = sequentialFilenames step_dir is ".shp"
           zipWithM_ (cropVectorWithBorder border) is os
           unionAllVectors os out
       )
-  pure out
 
 cropThenAverageRasters :: String -> [String] -> String -> IO String
 cropThenAverageRasters border is out = do
-  guardFile out $
+  guardFile' out $
     void $ stepWrapper RemoveStepDir "cropThenAverageRasters"
       (\step_dir -> do
           let os = sequentialFilenames step_dir is ".tif"
           zipWithM_ (cropRasterWithBorder border) is os
           averageRaster os out
       )
-  pure out
 
 cropThenUnionRasters :: String -> [String] -> String -> IO String
 cropThenUnionRasters border is out = do
-  guardFile out $
+  guardFile' out $
     void $ stepWrapper RemoveStepDir "cropThenUnionRasters"
       (\step_dir -> do
           let os = sequentialFilenames step_dir is ".tif"
           zipWithM_ (cropRasterWithBorderExtents border) is os
           unionRasters os out
       )
-  pure out
 
 elevationConstraint :: ConstraintData -> String -> [String] -> FilePath -> IO FilePath
 elevationConstraint cons border ins out = do
-  guardFile out $
+  guardFile' out $
     void $ stepWrapper RemoveStepDir "elevationConstraint"
       (\step_dir -> do
           let elevation_out = step_dir </> "elevation.tif"
@@ -217,11 +209,10 @@ elevationConstraint cons border ins out = do
 
           standardize expr_ elevation out
       )
-  pure out
 
 aspectConstraint :: AspectData -> a -> [String] -> FilePath -> IO FilePath
 aspectConstraint cons b ins out = do
-  guardFile out $
+  guardFile' out $
     void $ stepWrapper RemoveStepDir "aspectConstraint"
       (\step_dir -> do
           let aspect_out = step_dir </> "aspect.tif"
@@ -234,11 +225,10 @@ aspectConstraint cons b ins out = do
           let expr_ = "0*(" <> or_expr <> ")+1*(" <> and_expr <> ")"
           standardize expr_ aspect out
       )
-  pure out
 
 slopeConstraint :: ConstraintData -> a -> [String] -> FilePath -> IO FilePath
 slopeConstraint cons b ins out = do
-  guardFile out $
+  guardFile' out $
     void $ stepWrapper RemoveStepDir "slopeConstraint"
       (\step_dir -> do
           let slope_out = step_dir </> "slope.tif"
@@ -250,4 +240,3 @@ slopeConstraint cons b ins out = do
                   MoreBetter -> "0*(A<" <> dist <> ") + 1*(A>=" <> dist <> ")"
           standardize expr_ slope out
       )
-  pure out

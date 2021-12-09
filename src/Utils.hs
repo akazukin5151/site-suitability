@@ -111,3 +111,8 @@ guardFile o x = do
   exists <- doesFileExist o
   -- unless x = when $ not x
   unless exists x
+
+guardFile' :: FilePath -> IO () -> IO FilePath
+guardFile' o x = do
+  guardFile o x
+  pure o

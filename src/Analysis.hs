@@ -6,11 +6,10 @@ import Core (finalRasterCalculator)
 import GHC.IO.Exception (ExitCode (ExitFailure))
 import System.Exit (ExitCode (ExitSuccess))
 import Utils (
-  guardFile,
   quoteDouble,
   quoteSingle,
   readCmd,
-  runCmd,
+  runCmd, guardFile'
  )
 
 import Data.Aeson (Value (Number, String), decode)
@@ -35,7 +34,7 @@ import Data.Text (unpack)
 -}
 standardize :: String -> String -> String -> IO String
 standardize calc_expr i out = do
-  guardFile out $
+  guardFile' out $
     runCmd
       "gdal_calc.py"
       [ "-A"
@@ -44,11 +43,10 @@ standardize calc_expr i out = do
       , quoteDouble out
       , "--calc=" <> quoteDouble calc_expr
       ]
-  pure out
 
 standardizeQGIS :: (String -> String) -> String -> FilePath -> IO FilePath
 standardizeQGIS calc_expr i out = do
-  guardFile out $
+  guardFile' out $
     runCmd "qgis_process"
       [ "run"
       , "qgis:rastercalculator"
@@ -60,12 +58,11 @@ standardizeQGIS calc_expr i out = do
       , "OUTPUT=" <> quoteSingle out
       , "LAYERS=" <> quoteDouble i
       ]
-  pure out
 
 abstractRangeStandardize :: (Scientific -> Scientific -> String)
                          -> FilePath -> FilePath -> IO FilePath
 abstractRangeStandardize calc_expr i out = do
-  guardFile out $ do
+  guardFile' out $ do
     (min', max') <- getMinMax i
     print (min', max')
     when (min' == 0 && max' == 0) $
@@ -88,7 +85,6 @@ abstractRangeStandardize calc_expr i out = do
     -- gdal calc is buggy for some reason
     -- happens for insolation and elevation; doesn't seem to happen for other cases
     --void $ standardize calc_expr in_ out
-  pure out
 
 -- | Higher values are better
 -- This is an alternative in case if rangeStandardize hangs

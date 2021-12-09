@@ -8,7 +8,7 @@ import Utils (
   guardFile,
   quoteDouble,
   quoteSingle,
-  runCmd, readCmd
+  runCmd, readCmd, guardFile'
  )
 import System.FilePath ((</>))
 import GHC.IO.Exception ( ExitCode(ExitFailure, ExitSuccess) )
@@ -24,7 +24,7 @@ stepWrapper should_remove f_name f = do
 
 cropVectorWithBorder :: String -> String -> String -> IO String
 cropVectorWithBorder bf i out = do
-  guardFile out $
+  guardFile' out $
     runCmd
       "qgis_process"
       [ "run"
@@ -34,11 +34,10 @@ cropVectorWithBorder bf i out = do
       , "INPUT=" <> quoteDouble i
       , "OUTPUT=" <> quoteDouble out
       ]
-  pure out
 
 cropRasterWithBorder :: String -> String -> String -> IO String
 cropRasterWithBorder bf i out = do
-  guardFile out $
+  guardFile' out $
     runCmd
       "gdalwarp"
       [ "-of"
@@ -49,12 +48,11 @@ cropRasterWithBorder bf i out = do
       , quoteDouble i
       , quoteDouble out
       ]
-  pure out
 
 cropRasterWithBorderExtents :: String -> String -> String -> IO String
 cropRasterWithBorderExtents bf i out = do
   -- TODO get extents automatically
-  guardFile out $
+  guardFile' out $
     runCmd
       "gdal_translate"
       [ "-projwin"
@@ -67,7 +65,6 @@ cropRasterWithBorderExtents bf i out = do
       , quoteDouble i
       , quoteDouble out
       ]
-  pure out
 
 averageRaster :: [String] -> String -> IO String
 averageRaster = rasterCalculator calc_expr
@@ -77,7 +74,7 @@ averageRaster = rasterCalculator calc_expr
 
 reprojectVector :: String -> String -> String -> IO String
 reprojectVector i out projection = do
-  guardFile out $
+  guardFile' out $
     runCmd
       "ogr2ogr"
       [ "-t_srs"
@@ -85,11 +82,10 @@ reprojectVector i out projection = do
       , quoteDouble out
       , quoteDouble i
       ]
-  pure out
 
 filterVectorByField :: String -> String -> String -> String -> IO String
 filterVectorByField fname fvalue i out = do
-  guardFile out $
+  guardFile' out $
     runCmd
       "ogr2ogr"
       [ "-where"
@@ -97,11 +93,10 @@ filterVectorByField fname fvalue i out = do
       , quoteDouble out
       , quoteDouble i
       ]
-  pure out
 
 unionVectors :: String -> String -> String -> IO String
 unionVectors i1 i2 out = do
-  guardFile out $
+  guardFile' out $
     runCmd
       "qgis_process"
       [ "run"
@@ -111,11 +106,10 @@ unionVectors i1 i2 out = do
       , "OVERLAY=" <> quoteDouble i2
       , "OUTPUT=" <> quoteDouble out
       ]
-  pure out
 
 dissolveVector :: String -> String -> IO String
 dissolveVector i out = do
-  guardFile out $
+  guardFile' out $
     runCmd
       "qgis_process"
       [ "run"
@@ -124,19 +118,17 @@ dissolveVector i out = do
       , "INPUT=" <> quoteDouble i
       , "OUTPUT=" <> quoteDouble out
       ]
-  pure out
 
 unionRasters :: [String] -> String -> IO String
 unionRasters is out = do
   let inputs = map quoteDouble is
-  guardFile out $
+  guardFile' out $
     runCmd "gdal_merge.py" $
       [ "-of"
       , "GTiff"
       , "-o"
       , quoteDouble out
       ] <> inputs
-  pure out
 
 gdaldem :: String
         -> [String]
@@ -144,7 +136,7 @@ gdaldem :: String
         -> String
         -> IO String
 gdaldem cmd extra i out = do
-  guardFile out $
+  guardFile' out $
     runCmd "gdaldem" $
       [ cmd
       , quoteDouble i
@@ -154,7 +146,6 @@ gdaldem cmd extra i out = do
       , "-b"
       , "1"
       ] <> extra
-  pure out
 
 slopeCmd :: String -> String -> IO String
 slopeCmd = gdaldem "slope" ["-s", "111000.0", "-compute_edges"]
@@ -171,7 +162,7 @@ aspectFromElevation _ [is] = aspectCmd is
 
 vectorizeLandUse :: String -> String -> IO String
 vectorizeLandUse i out = do
-  guardFile out $
+  guardFile' out $
     runCmd
       "gdal_polygonize.py"
       [ quoteDouble i
@@ -183,11 +174,10 @@ vectorizeLandUse i out = do
       -- not too important because it's essentially an internal detail
       , "DN"
       ]
-  pure out
 
 bufferVector :: Double -> String -> String -> IO String
 bufferVector dist i out = do
-  guardFile out $
+  guardFile' out $
     runCmd
       "qgis_process"
       [ "run"
@@ -198,11 +188,10 @@ bufferVector dist i out = do
       , "DISTANCE=" <> show dist
       , "OUTPUT=" <> quoteDouble out
       ]
-  pure out
 
 addDummyField :: String -> String -> IO String
 addDummyField i out = do
-  guardFile out $
+  guardFile' out $
     runCmd
       "qgis_process"
       [ "run"
@@ -214,11 +203,10 @@ addDummyField i out = do
       , "FORMULA=1"
       , "OUTPUT=" <> quoteDouble out
       ]
-  pure out
 
 rasterizePower :: String -> String -> IO String
 rasterizePower i out = do
-  guardFile out $
+  guardFile' out $
     runCmd
       "gdal_rasterize"
       [ "-a"
@@ -233,11 +221,10 @@ rasterizePower i out = do
       , quoteDouble i
       , quoteDouble out
       ]
-  pure out
 
 rasterProximity :: String -> String -> IO String
 rasterProximity i out = do
-  guardFile out $
+  guardFile' out $
     runCmd
       "gdal_proximity.py"
       [ "-srcband"
@@ -253,11 +240,10 @@ rasterProximity i out = do
       , quoteDouble i
       , quoteDouble out
       ]
-  pure out
 
 removeFields :: String -> String -> IO String
 removeFields i out = do
-  guardFile out $
+  guardFile' out $
     runCmd
       "qgis_process"
       [ "run"
@@ -267,11 +253,10 @@ removeFields i out = do
       , "OUTPUT=" <> quoteDouble out
       , "FIELDS=\"id\""
       ]
-  pure out
 
 vectorize :: FilePath -> FilePath -> IO FilePath
 vectorize i out = do
-  guardFile out $
+  guardFile' out $
     runCmd
       "gdal_polygonize.py"
       [ quoteDouble i
@@ -283,11 +268,10 @@ vectorize i out = do
       , "OUTPUT"
       , "DN"
       ]
-  pure out
 
 extractVectorAttribute :: String -> String -> String -> FilePath -> IO FilePath
 extractVectorAttribute field value i out = do
-  guardFile out $
+  guardFile' out $
     runCmd
       "qgis_process"
       [ "run"
@@ -299,11 +283,10 @@ extractVectorAttribute field value i out = do
       , "INPUT=" <> quoteDouble i
       , "OUTPUT=" <> quoteDouble out
       ]
-  pure out
 
 vectorDifference :: String -> String -> FilePath -> IO FilePath
 vectorDifference i ov out = do
-  guardFile out $ do
+  guardFile' out $ do
     (status, _, _) <- readCmd
       "qgis_process"
       [ "run"
@@ -327,7 +310,6 @@ vectorDifference i ov out = do
           , "OUTPUT=" <> quoteDouble out
           ]
         removePathForcibly step_dir
-  pure out
     where
       fixOverlayGeom ov' =
         stepWrapper DontRemoveStepDir "fixOverlayGeom"
