@@ -7,7 +7,6 @@ import Analysis (rangeStandardize, reverseRangeStandardize, standardize, suhSigm
 import Preprocessing.Combined (
   cropThenAverageRasters,
   cropThenUnionRasters,
-  residentialProximity,
   vectorProximityFromFiles, vectorConstraintFromFiles, residentialConstraint, elevationConstraint, aspectConstraint, slopeConstraint, residentialProximityNew
  )
 import Preprocessing.Core (
@@ -26,7 +25,6 @@ data PrepFunctions = CropThenAverageRasters
                    | CropThenUnionRasters
                    | Slope
                    | Aspect
-                   | ResidentialProximity
                    | ResidentialProximityNew
                    | VectorProximity
                    deriving (Generic, Show)
@@ -36,13 +34,12 @@ instance FromJSON PrepFunctions
 
 -- | PrepFunctions -> border -> [input] -> output -> IO preprocessed
 evalPrepF :: PrepFunctions -> String -> [String] -> String -> IO String
-evalPrepF CropThenAverageRasters    = cropThenAverageRasters
-evalPrepF CropThenUnionRasters      = cropThenUnionRasters
-evalPrepF Slope                     = slopeFromElevation
-evalPrepF Aspect                    = aspectFromElevation
-evalPrepF ResidentialProximity      = residentialProximity
-evalPrepF ResidentialProximityNew      = residentialProximityNew
-evalPrepF VectorProximity           = vectorProximityFromFiles
+evalPrepF CropThenAverageRasters  = cropThenAverageRasters
+evalPrepF CropThenUnionRasters    = cropThenUnionRasters
+evalPrepF Slope                   = slopeFromElevation
+evalPrepF Aspect                  = aspectFromElevation
+evalPrepF ResidentialProximityNew = residentialProximityNew
+evalPrepF VectorProximity         = vectorProximityFromFiles
 
 data StdFunctions = RangeLargerBetter
                   | RangeSmallerBetter

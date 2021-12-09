@@ -55,38 +55,6 @@ unionAllVectors is out = do
              pure (next_idx, res)
         )
 
-residentialProximity :: String -> [String] -> FilePath -> IO FilePath
-residentialProximity border_output_file [land_use_in, land_use_field, residential_field_value] out = do
-  let out_dir = takeDirectory border_output_file
-  border_buff <- bufferBorder out_dir border_output_file
-  guardFile out $
-    void $ stepWrapper DontRemoveStepDir "residentialProximity"
-      (\step_dir -> do
-          let land_use_out_ = step_dir <> "/land_use_out.tif"
-          land_use_out <-
-            cropRasterWithBorder border_buff land_use_in land_use_out_
-
-          let vect_land_use_out_ = step_dir <> "/land use poly.shp"
-          vect_land_use_out <- vectorizeLandUse land_use_out vect_land_use_out_
-
-          let reproj_land_use_out_ = step_dir <> "/land_use_reproj.shp"
-          reproj_land_use_out <- reprojectLandUse vect_land_use_out reproj_land_use_out_
-
-          let residential_out_vec_ = step_dir <> "/residential_vec.shp"
-          residential_out_vec <-
-            filterVectorByField
-              land_use_field
-              residential_field_value
-              reproj_land_use_out
-              residential_out_vec_
-
-          let prox_out_ = step_dir </> "prox_out.tif"
-          prox_out <- vectorProximityFromUnion residential_out_vec prox_out_
-
-          cropRasterWithBorder border_output_file prox_out out
-      )
-  pure out
-
 residentialProximityNew :: String -> [String] -> FilePath -> IO FilePath
 residentialProximityNew border_output_file [land_use_in] out = do
   let out_dir = takeDirectory border_output_file
