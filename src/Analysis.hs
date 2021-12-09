@@ -13,7 +13,7 @@ import Utils (
   runCmd,
  )
 
-import Data.Aeson (Value (Number, Object, String), decode)
+import Data.Aeson (Value (Number, String), decode)
 import Data.ByteString.Lazy.UTF8 (fromString)
 
 import Control.Lens ((^?))

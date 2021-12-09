@@ -7,7 +7,7 @@ import Control.Monad (foldM, unless)
 import Lens.Micro.TH (makeLenses)
 import System.Directory (doesFileExist)
 import System.Exit (ExitCode)
-import System.FilePath (replaceBaseName, takeBaseName, replaceDirectory, takeDirectory, (</>), takeExtension, (<.>))
+import System.FilePath (replaceBaseName, takeBaseName, takeDirectory, (</>), takeExtension, (<.>))
 import System.Process (callCommand, readProcessWithExitCode)
 
 data Input = Path String

@@ -8,27 +8,25 @@ import Preprocessing.Core (
   cropRasterWithBorderExtents,
   cropVectorWithBorder,
   dissolveVector,
-  filterVectorByField,
   rasterProximity,
   rasterizePower,
   removeFields,
   reprojectVector,
   stepWrapper,
   unionRasters,
-  unionVectors,
-  vectorizeLandUse, bufferVector, aspectFromElevation, slopeFromElevation, vectorize, extractVectorAttribute, vectorDifference, bufferBorder
+  unionVectors, bufferVector, aspectFromElevation, slopeFromElevation, bufferBorder
  )
-import System.Directory (removePathForcibly, renameFile)
+import System.Directory (removePathForcibly)
 import Utils (
   ShouldRemoveStepDir (DontRemoveStepDir, RemoveStepDir),
   appendFilename,
   foldM1,
   guardFile,
-  sequentialFilenames, Constraint
+  sequentialFilenames
  )
 import Analysis (standardize, standardizeQGIS)
-import System.FilePath ((</>), replaceExtension, takeDirectory, takeBaseName)
-import Core (Direction(LessBetter, MoreBetter), ConstraintData (c_direction, distance), AspectData (limit1, limit2), rasterCalculator, finalRasterCalculator)
+import System.FilePath ((</>), takeDirectory)
+import Core (Direction(LessBetter, MoreBetter), ConstraintData (c_direction, distance), AspectData (limit1, limit2), finalRasterCalculator)
 
 -- | The output name must not have an extension; it is not a filepath or vector
 unionAllVectors :: [String] -> String -> IO String

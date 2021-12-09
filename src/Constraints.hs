@@ -1,10 +1,9 @@
 {-# LANGUAGE LambdaCase #-}
 module Constraints where
 
-import Utils (Constraint, c_require, r_prep_f, r_inputs, r_output, prep_f, c_func, c_inputs, c_output, appendFilename, guardFile, runCmd, quoteSingle, quoteDouble, Input (Path, RequireOutput))
-import Control.Lens ((^.), (?~), (&), (<&>))
+import Utils (Constraint, c_require, r_prep_f, r_inputs, r_output, c_func, c_inputs, c_output, guardFile, runCmd, quoteSingle, quoteDouble, Input (Path, RequireOutput))
+import Control.Lens ((^.), (<&>))
 import System.FilePath ((</>))
-import Preprocessing.Combined
 import Core (finalRasterCalculator)
 
 

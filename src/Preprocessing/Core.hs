@@ -11,7 +11,7 @@ import Utils (
   runCmd, readCmd
  )
 import System.FilePath ((</>))
-import GHC.IO.Exception
+import GHC.IO.Exception ( ExitCode(ExitFailure, ExitSuccess) )
 
 stepWrapper :: ShouldRemoveStepDir -> String -> (String -> IO a) -> IO a
 stepWrapper should_remove f_name f = do

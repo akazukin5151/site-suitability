@@ -4,14 +4,27 @@
 module Main where
 
 import Analysis (
-  weightCriteria, multiplyAllCriteria, rangeStandardize, rangeStandardize'
+  weightCriteria, multiplyAllCriteria, rangeStandardize'
  )
-import Config (Config (..), configToCriteria, CriterionConfig (CriterionConfig))
-import qualified Config as C
+import Config (Config (..), configToCriteria)
 import Control.Lens ((&), (.~), (?~), (^.), (<&>))
-import Preprocessing.Core (filterVectorByField, cropRasterWithBorder, bufferVector)
+import Preprocessing.Core (filterVectorByField)
 import Utils
-import Data.Aeson (decodeFileStrict', encodeFile, eitherDecodeFileStrict)
+    ( inputs,
+      mkStdName,
+      mkWeightedName,
+      output,
+      prep_f,
+      r_output,
+      r_prep_f,
+      require,
+      result,
+      std_f,
+      weight,
+      Criterion,
+      Input(RequireOutput, Path),
+      Require(_r_inputs) )
+import Data.Aeson (eitherDecodeFileStrict)
 import System.Directory (createDirectoryIfMissing)
 import Data.Maybe (fromJust)
 import System.FilePath ((</>))
