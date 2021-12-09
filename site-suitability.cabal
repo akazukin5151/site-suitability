@@ -42,7 +42,8 @@ executable site-suitability
                        Config.Combined,
                        Preprocessing.Core.Vector,
                        Preprocessing.Core.Raster,
-                       Preprocessing.Constraints
+                       Preprocessing.Constraints,
+                       Metadata
   build-depends:       base >= 4.7 && < 5,
                        process == 1.6.*,
                        directory == 1.3.*,
