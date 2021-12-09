@@ -33,52 +33,53 @@ residentialConstraint cons border [land_use_in] out = do
               standardize "0*(A==1)+1*(A==0)" tmp out
       )
 
-elevationConstraint :: ConstraintData -> String -> [String] -> FilePath -> IO FilePath
-elevationConstraint cons border ins out = do
+abstractConstraint :: (FilePath -> IO String)
+                   -> String
+                   -> String
+                   -> FilePath
+                   -> IO FilePath
+abstractConstraint func name expr out = do
   guardFile' out $
-    void $ stepWrapper RemoveStepDir "elevationConstraint"
+    void $ stepWrapper RemoveStepDir (name <> "Constraint")
       (\step_dir -> do
-          let elevation_out = step_dir </> "elevation.tif"
-          elevation <- cropThenUnionRasters border ins elevation_out
-          let dist = show $ distance cons
-          let expr_ =
-                case c_direction cons of
-                  LessBetter -> "0*(A>" <> dist <> ") + 1*(A<=" <> dist <> ")"
-                  MoreBetter -> "0*(A<" <> dist <> ") + 1*(A>=" <> dist <> ")"
-
-          standardize expr_ elevation out
+          let constraint_out_ = step_dir </> (name <> ".tif")
+          constraint_out <- func constraint_out_
+          standardize expr constraint_out out
       )
+
+elevationConstraint :: ConstraintData -> String -> [String] -> FilePath -> IO FilePath
+elevationConstraint cons border ins = abstractConstraint func expr_ "elevation"
+  where
+    dist = show $ distance cons
+    expr_ =
+      case c_direction cons of
+        LessBetter -> "0*(A>" <> dist <> ") + 1*(A<=" <> dist <> ")"
+        MoreBetter -> "0*(A<" <> dist <> ") + 1*(A>=" <> dist <> ")"
+    func elevation_out =
+        cropThenUnionRasters border ins elevation_out
 
 aspectConstraint :: AspectData -> a -> [String] -> FilePath -> IO FilePath
-aspectConstraint cons b ins out = do
-  guardFile' out $
-    void $ stepWrapper RemoveStepDir "aspectConstraint"
-      (\step_dir -> do
-          let aspect_out = step_dir </> "aspect.tif"
-          aspect <- aspectFromElevation b ins aspect_out
-          let l1 = show $ limit1 cons
-          let l2 = show $ limit2 cons
-          -- 0 if outside bounds, 1 if within bounds
-          let or_expr = "logical_or(A<" <> l1 <> ", A>" <> l2 <> ")"
-          let and_expr = "logical_and(A>" <> l1 <> ", A<" <> l2 <> ")"
-          let expr_ = "0*(" <> or_expr <> ")+1*(" <> and_expr <> ")"
-          standardize expr_ aspect out
-      )
+aspectConstraint cons b ins = abstractConstraint func expr_ "aspect"
+    where
+      l1 = show $ limit1 cons
+      l2 = show $ limit2 cons
+      -- 0 if outside bounds, 1 if within bounds
+      or_expr  = "logical_or(A<" <> l1 <> ", A>" <> l2 <> ")"
+      and_expr = "logical_and(A>" <> l1 <> ", A<" <> l2 <> ")"
+      expr_ = "0*(" <> or_expr <> ")+1*(" <> and_expr <> ")"
+      func aspect_out =
+          aspectFromElevation b ins aspect_out
 
 slopeConstraint :: ConstraintData -> a -> [String] -> FilePath -> IO FilePath
-slopeConstraint cons b ins out = do
-  guardFile' out $
-    void $ stepWrapper RemoveStepDir "slopeConstraint"
-      (\step_dir -> do
-          let slope_out = step_dir </> "slope.tif"
-          slope <- slopeFromElevation b ins slope_out
-          let dist = show $ distance cons
-          let expr_ =
-                case c_direction cons of
-                  LessBetter -> "0*(A>" <> dist <> ") + 1*(A<=" <> dist <> ")"
-                  MoreBetter -> "0*(A<" <> dist <> ") + 1*(A>=" <> dist <> ")"
-          standardize expr_ slope out
-      )
+slopeConstraint cons b ins = abstractConstraint func expr_ "slope"
+    where
+      dist = show $ distance cons
+      expr_ =
+        case c_direction cons of
+          LessBetter -> "0*(A>" <> dist <> ") + 1*(A<=" <> dist <> ")"
+          MoreBetter -> "0*(A<" <> dist <> ") + 1*(A>=" <> dist <> ")"
+      func slope_out =
+          slopeFromElevation b ins slope_out
 
 -- | The difference between this and vectorProximityFromUnion
 -- is that this one must have a buffer for lines; it doesn't make sense
