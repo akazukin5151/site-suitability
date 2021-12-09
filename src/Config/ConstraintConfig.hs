@@ -3,7 +3,7 @@
 
 module Config.ConstraintConfig where
 
-import Preprocessing.Combined (
+import Preprocessing.Constraints (
   vectorConstraintFromFiles, residentialConstraint, elevationConstraint, aspectConstraint, slopeConstraint
  )
 import GHC.Generics (Generic)
