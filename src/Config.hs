@@ -221,28 +221,27 @@ instance FromJSON CriterionConfig where
       , weight  = weight_
       , require = require_
       }
-      where
-        -- | If the element is a string, interpret it as a path
-        -- If it is an object, and the 'type' field is 'Path', interpret as path
-        -- if the 'type' field is 'RequireOutput', interpret as requirement output
-        -- if the 'type' field is unknown or it is not an object, fail
-        parseInputConfig :: Value -> Parser InputConfig
-        parseInputConfig (String s) = pure $ PathConfig $ unpack s
-        parseInputConfig (Object o) = do
-          type_   <- (o .: "type" :: Parser String)
-          string_ <- (o .: "string" :: Parser String)
-          case type_ of
-            "Path"          -> pure $ PathConfig string_
-            "RequireOutput" -> pure $ RequireOutputConfig string_
-            invalid ->
-              parseFail $ "parsing an input in CriterionConfig failed, expected 'Path' or 'RequireOutput', but encountered '" <> invalid <> "'"
-        parseInputConfig invalid =
-          prependFailure "parsing inputs in CriterionConfig failed, " $
-            typeMismatch "Object or String" invalid
-
   parseJSON invalid =
     prependFailure "parsing CriterionConfig failed, " $
       typeMismatch "Object" invalid
+
+-- | If the element is a string, interpret it as a path
+-- If it is an object, and the 'type' field is 'Path', interpret as path
+-- if the 'type' field is 'RequireOutput', interpret as requirement output
+-- if the 'type' field is unknown or it is not an object, fail
+parseInputConfig :: Value -> Parser InputConfig
+parseInputConfig (String s) = pure $ PathConfig $ unpack s
+parseInputConfig (Object o) = do
+  type_   <- (o .: "type" :: Parser String)
+  string_ <- (o .: "string" :: Parser String)
+  case type_ of
+    "Path"          -> pure $ PathConfig string_
+    "RequireOutput" -> pure $ RequireOutputConfig string_
+    invalid ->
+      parseFail $ "parsing an input in CriterionConfig failed, expected 'Path' or 'RequireOutput', but encountered '" <> invalid <> "'"
+parseInputConfig invalid =
+  prependFailure "parsing inputs in CriterionConfig failed, " $
+    typeMismatch "Object or String" invalid
 
 data RequireConfig =
   RequireConfig { r_name   :: String
@@ -268,7 +267,7 @@ evalRequire (Just rc) = Just $ Require { _r_name   = r_name rc
 
 data ConstraintConfig =
   ConstraintConfig  { c_name :: String
-                    , c_inputs :: [String]
+                    , c_inputs :: [InputConfig]
                     , c_output :: String
                     , c_func :: ConstraintFunction
                     , c_require :: Maybe RequireConfig
@@ -279,7 +278,27 @@ instance ToJSON ConstraintConfig where
   toEncoding = genericToEncoding customOptions
 
 instance FromJSON ConstraintConfig where
-  parseJSON = genericParseJSON customOptions
+  -- TODO duplicated code?
+  parseJSON (Object obj) = do
+    array <- (obj .: "c_inputs" :: Parser Array)
+    x <- traverse parseInputConfig array
+    let c_inputs_ = toList x
+
+    c_name_    <- obj .: "c_name"
+    c_output_  <- obj .: "c_output"
+    c_func_    <- obj .: "c_func"
+    c_require_ <- obj .:? "c_require"
+
+    pure $ ConstraintConfig
+      { c_name    = c_name_
+      , c_inputs  = c_inputs_
+      , c_output  = c_output_
+      , c_func    = c_func_
+      , c_require = c_require_
+      }
+  parseJSON invalid =
+    prependFailure "parsing CriterionConfig failed, " $
+      typeMismatch "Object" invalid
 
 data ConstraintFunction = ResidentialConstraint ConstraintData
                         | VectorConstraint ConstraintData
@@ -329,7 +348,7 @@ configToCriteria Config {criteria = ca, constraints = co} =
                      }
     g :: ConstraintConfig -> Constraint
     g cc = Constraint { _c_name = c_name cc
-                      , _c_inputs = c_inputs cc
+                      , _c_inputs = evalInput <$> c_inputs cc
                       , _c_output = c_output cc
                       , _c_func = evalConstraintF $ c_func cc
                       , _c_require = evalRequire $ c_require cc

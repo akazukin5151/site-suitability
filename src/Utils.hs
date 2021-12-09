@@ -43,7 +43,7 @@ makeLenses ''Criterion
 
 data Constraint =
   Constraint { _c_name :: String
-             , _c_inputs :: [String]
+             , _c_inputs :: [Input]
              , _c_output :: String
              , _c_func :: String -> [String] -> FilePath -> IO FilePath
              -- ^ Should always return a raster

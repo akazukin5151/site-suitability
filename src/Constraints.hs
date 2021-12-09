@@ -1,7 +1,8 @@
+{-# LANGUAGE LambdaCase #-}
 module Constraints where
 
-import Utils (Constraint, c_require, r_prep_f, r_inputs, r_output, prep_f, c_func, c_inputs, c_output, appendFilename, guardFile, runCmd, quoteSingle, quoteDouble)
-import Control.Lens ((^.), (?~), (&))
+import Utils (Constraint, c_require, r_prep_f, r_inputs, r_output, prep_f, c_func, c_inputs, c_output, appendFilename, guardFile, runCmd, quoteSingle, quoteDouble, Input (Path, RequireOutput))
+import Control.Lens ((^.), (?~), (&), (<&>))
 import System.FilePath ((</>))
 import Preprocessing.Combined
 import Core (finalRasterCalculator)
@@ -19,17 +20,31 @@ processConstraints out_dir border cons =
     out = out_dir </> "constraints.tif"
     g b constraint =
       case constraint ^. c_require of
-        Nothing -> def
+        Nothing -> do
+          let is = constraint ^. c_inputs
+          -- Force all inputs into strings of filepaths that exist or error
+          let msg x =
+                "No requirements specified, but criteria with inputs "
+                <> show is <> " depends on the output of requirement" <> show x
+          let paths = is <&> (\case
+                Path y -> y
+                RequireOutput x -> error $ msg x)
+          h b constraint c_func (const paths) c_output
+
         Just req -> do
-          _ <- h b req r_prep_f r_inputs r_output
-          def
-      where
-        def = h b constraint c_func c_inputs c_output
+          _ <- h b req r_prep_f (^. r_inputs) r_output
+          let is = constraint ^. c_inputs
+          let paths = [ case x of
+                          Path p -> p
+                          RequireOutput o -> out_dir </> "constraints" </> o
+                      | x <- is
+                      ]
+          h b constraint c_func (const paths) c_output
 
     h b a pf inf outf = f b is out
       where
         f = a ^. pf
-        is = a ^. inf
+        is = inf a
         out = out_dir </> "constraints" </> a ^. outf
 
 multiplyFinalWithConstraint :: String -> String -> FilePath -> IO FilePath

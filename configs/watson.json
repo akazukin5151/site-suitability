@@ -111,7 +111,10 @@
     {
       "c_name":"aspect",
       "c_inputs": [
-        "out/watson/constraints/elevation union.tif"
+        {
+          "type": "RequireOutput",
+          "string": "elevation union.tif"
+        }
       ],
       "c_output": "aspect_constraint.tif",
       "c_func":{
@@ -136,7 +139,10 @@
     {
       "c_name": "slope",
       "c_inputs": [
-        "out/watson/constraints/elevation union.tif"
+        {
+          "type": "RequireOutput",
+          "string": "elevation union.tif"
+        }
       ],
       "c_output": "slope_constraint.tif",
       "c_func": {
