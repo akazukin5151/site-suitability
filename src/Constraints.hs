@@ -8,13 +8,11 @@ import Core (finalRasterCalculator)
 
 
 processConstraints :: FilePath -> String -> [Constraint] -> IO (Maybe FilePath)
-processConstraints out_dir border cons =
-  case cons of
-    [] -> pure Nothing
-    _ -> do
-          rasts <- sequence [ g border constraint | constraint <- cons ]
-          r <- finalRasterCalculator rasts out
-          pure $ Just r
+processConstraints _ _ []              = pure Nothing
+processConstraints out_dir border cons = do
+  rasts <- sequence [ g border constraint | constraint <- cons ]
+  r <- finalRasterCalculator rasts out
+  pure $ Just r
   where
     out = out_dir </> "constraints.tif"
     g b constraint =

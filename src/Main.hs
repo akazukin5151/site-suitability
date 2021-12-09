@@ -29,6 +29,7 @@ import System.Directory (createDirectoryIfMissing)
 import Data.Maybe (fromJust)
 import System.FilePath ((</>))
 import Constraints (processConstraints, multiplyFinalWithConstraint)
+import Control.Monad (void)
 
 {-# ANN module "HLint: ignore Use camelCase" #-}
 
@@ -62,10 +63,9 @@ main' name = do
       final_std <- rangeStandardize' final $ out_dir </> "final_std.tif"
       case constraints of
         Nothing -> pure ()
-        Just c -> do
-          _ <- multiplyFinalWithConstraint
-            final_std c $ out_dir </> "final_clipped.tif"
-          pure ()
+        Just c ->
+          void $ multiplyFinalWithConstraint final_std c $ out_dir </> "final_clipped.tif"
+
       pure ()
 
 cropBorder :: FilePath -> IO String
