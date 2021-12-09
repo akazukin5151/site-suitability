@@ -230,16 +230,10 @@ aspectConstraint cons b ins out = do
           aspect <- aspectFromElevation b ins aspect_out
           let l1 = show $ limit1 cons
           let l2 = show $ limit2 cons
-          let expr_ =
-                "0*(logical_or(A<"
-                <> l1
-                <> ", A>"
-                <> l2
-                <> "))+1*(logical_and(A>"
-                <> l1
-                <> ", A<"
-                <> l2
-                <> "))"
+          -- 0 if outside bounds, 1 if within bounds
+          let or_expr = "logical_or(A<" <> l1 <> ", A>" <> l2 <> ")"
+          let and_expr = "logical_and(A>" <> l1 <> ", A<" <> l2 <> ")"
+          let expr_ = "0*(" <> or_expr <> ")+1*(" <> and_expr <> ")"
           standardize expr_ aspect out
       )
   pure out
