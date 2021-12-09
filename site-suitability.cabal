@@ -34,9 +34,12 @@ executable site-suitability
                        Preprocessing.Combined,
                        Analysis,
                        Utils,
-                       Config,
                        Core,
-                       Constraints
+                       Constraints,
+                       Config.CriteriaConfig,
+                       Config.ConstraintConfig,
+                       Config.Core,
+                       Config.Combined
   build-depends:       base >= 4.7 && < 5,
                        process == 1.6.*,
                        directory == 1.3.*,

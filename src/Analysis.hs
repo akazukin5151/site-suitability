@@ -1,3 +1,4 @@
+-- | Things for after preprocessing - standardization and weighting
 {-# LANGUAGE OverloadedStrings #-}
 
 module Analysis where

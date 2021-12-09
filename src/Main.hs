@@ -6,7 +6,7 @@ module Main where
 import Analysis (
   weightCriteria, multiplyAllCriteria, rangeStandardize'
  )
-import Config (Config (..), configToCriteria)
+import Config.Combined (Config (..), configToCriteria)
 import Control.Lens ((&), (.~), (?~), (^.), (<&>))
 import Preprocessing.Core (filterVectorByField)
 import Utils

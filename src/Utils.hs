@@ -17,7 +17,6 @@ data Input = Path String
 data Criterion =
   Criterion { _name :: String
             , _inputs :: [Input]
-              -- ^ Can be a list of Vectors or list of Rasters
             , _output :: String
             , _prep_f :: String -> [String] -> String -> IO String
             -- ^         Border -> [input] -> output -> IO preprocessed
