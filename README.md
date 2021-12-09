@@ -17,6 +17,40 @@ FIXME: some calculations hang
     - asakareh
         - no observed incidents
 
+# Installation
+
+## Prerequisites
+
+- Install [Haskell Stack](https://github.com/commercialhaskell/stack/)
+- Install QGIS
+- Install an updated version of GDAL
+
+Your GDAL version must be at least (aka, oldest possible):
+
+```sh
+$ gdalinfo --version
+GDAL 3.3.1, released 2021/06/28
+```
+
+## Compile
+
+1. git clone and cd into dir
+2. stack build
+
+# Running
+
+(Optional) edit `configs/run.txt`. Put the names of the configs you want to run on a new line. Do not type extensions (`.json`)
+
+**If you're using (ana)conda, please disable it temporarily**
+Use `conda deactivate`
+(To enable it back, type `conda activate base`, where base is your environment name)
+
+Therefore the command to compile and run would be like:
+
+```
+conda deactivate && stack build --fast && stack exec site-suitability
+```
+
 # Q&A
 
 - Why not use Python (rasterio) or R?
@@ -51,32 +85,6 @@ Because it is my favourite programming language. I will use Python when appropri
 - This code is spaghetti! It's buggy
 
 Apologies, but I have to meet a deadline. Fortunately, Haskell makes refactoring painless
-
-# Installation
-
-**NOTE: YOU MUST HAVE AN UPDATED GDAL VERSION**
-
-Your GDAL version must be at least (aka, oldest possible):
-
-```sh
-$ gdalinfo --version
-GDAL 3.3.1, released 2021/06/28
-```
-
-1. git clone and cd into dir
-2. stack build
-
-# Running
-
-**If you're using (ana)conda, please disable it temporarily**
-Use `conda deactivate`
-If you want to enable it, type `conda activate base`, where base is your environment name
-
-Therefore the command to compile and run would be like:
-
-```
-conda deactivate && stack build --fast && stack exec site-suitability
-```
 
 # License
 
