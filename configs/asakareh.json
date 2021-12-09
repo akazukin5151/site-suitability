@@ -31,7 +31,10 @@
     {
       "name": "slope",
       "inputs": [
-        "out/asakareh/preprocessed/elevation union.tif"
+        {
+          "type": "RequireOutput",
+          "string": "elevation union.tif"
+        }
       ],
       "output": "slope.tif",
       "prep_f": "Slope",
