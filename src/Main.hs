@@ -11,7 +11,7 @@ import qualified Config as C
 import Control.Lens ((&), (.~), (?~), (^.), (<&>))
 import Preprocessing.Core (filterVectorByField, cropRasterWithBorder, bufferVector)
 import Utils
-import Data.Aeson (decodeFileStrict', encodeFile)
+import Data.Aeson (decodeFileStrict', encodeFile, eitherDecodeFileStrict)
 import System.Directory (createDirectoryIfMissing)
 import Data.Maybe (fromJust)
 import System.FilePath ((</>))
@@ -26,10 +26,11 @@ main = do
 
 main' :: String -> IO ()
 main' name = do
-  mc <- (decodeFileStrict' $ "configs/" <> name <> ".json" :: IO (Maybe Config))
+  mc <- (eitherDecodeFileStrict $ "configs/" <> name <> ".json"
+          :: IO (Either String Config))
   case mc of
-    Nothing -> error "Decode failed"
-    Just c -> do
+    Left x -> print x >> error "Decode failed"
+    Right c -> do
       let out_dir = "out" </> name
       createDirectoryIfMissing True $ out_dir </> "preprocessed"
       createDirectoryIfMissing True $ out_dir </> "constraints"
