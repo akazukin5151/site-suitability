@@ -93,8 +93,10 @@ abstractRangeStandardize calc_expr i out = do
 -- would suffice, and there would be no need to use this function
 rangeStandardize' :: String -> String -> IO String
 rangeStandardize' i o = do
-  (min', max') <- getMinMax i
-  standardize (calc_expr min' max') i o
+  guardFile' o $ do
+    (min', max') <- getMinMax i
+    _ <- standardize (calc_expr min' max') i o
+    pure ()
   where
     upper min'          = "(A -" <> show min' <> ") "
     lower max' min'     = "(" <> show max' <> " - " <> show min' <> ")"
