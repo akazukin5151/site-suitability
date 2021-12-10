@@ -74,7 +74,14 @@ gdaldem cmd extra i out = do
 slopeCmd :: String -> String -> IO String
 slopeCmd = gdaldem "slope" ["-s", "111000.0", "-compute_edges"]
 
--- TODO: this is broken if in requirements
+-- TODO: these functions only take exactly one input, but would fail when run
+-- (potentially after other calculations)
+-- ideally, the config should be validated first
+-- but validation makes it more specific and less flexible
+-- if it only accepts one input but someone in the future wants to change it to
+-- accept multiple inputs, they would have more work
+-- (as the validator needs to be changed too)
+-- best to let it accept lists, but validate (ensure at runtime) it has only one item
 slopeFromElevation :: a -> [String] -> String -> IO String
 slopeFromElevation _ [is] = slopeCmd is
 
