@@ -31,7 +31,10 @@ executable site-suitability
                        -Wno-prepositive-qualified-module
                        -Wno-missing-deriving-strategies
   other-modules:       Preprocessing.Core,
+                       Preprocessing.Core.Vector,
+                       Preprocessing.Core.Raster,
                        Preprocessing.Combined,
+                       Preprocessing.Constraints,
                        Analysis,
                        Utils,
                        Core,
@@ -40,9 +43,6 @@ executable site-suitability
                        Config.ConstraintConfig,
                        Config.Core,
                        Config.Combined,
-                       Preprocessing.Core.Vector,
-                       Preprocessing.Core.Raster,
-                       Preprocessing.Constraints,
                        Metadata
   build-depends:       base >= 4.7 && < 5,
                        process == 1.6.*,
