@@ -9,6 +9,14 @@ import Preprocessing.Core.Raster
       rasterProximity,
       unionRasters )
 import Preprocessing.Core.Vector
+    ( addDummyField,
+      bufferBorder,
+      cropVectorWithBorder,
+      dissolveVector,
+      rasterizePower,
+      removeFields,
+      reprojectVector,
+      unionVectors )
 import System.Directory (removePathForcibly)
 import Utils (
   ShouldRemoveStepDir (DontRemoveStepDir, RemoveStepDir),

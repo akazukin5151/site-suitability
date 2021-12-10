@@ -1,17 +1,10 @@
 module Preprocessing.Core.Raster where
 
-import Control.Monad (when)
 import Core (rasterCalculator)
-import System.Directory (createDirectoryIfMissing, removePathForcibly)
 import Utils (
-  ShouldRemoveStepDir (RemoveStepDir, DontRemoveStepDir),
-  guardFile,
   quoteDouble,
-  quoteSingle,
-  runCmd, readCmd, guardFile'
+  runCmd, guardFile'
  )
-import System.FilePath ((</>))
-import GHC.IO.Exception ( ExitCode(ExitFailure, ExitSuccess) )
 
 cropRasterWithBorder :: String -> String -> String -> IO String
 cropRasterWithBorder bf i out = do
@@ -109,4 +102,3 @@ rasterProximity i out = do
       , quoteDouble i
       , quoteDouble out
       ]
-

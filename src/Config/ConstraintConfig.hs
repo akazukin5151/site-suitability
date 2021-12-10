@@ -11,7 +11,7 @@ import Data.Aeson ( FromJSON (parseJSON), ToJSON (toEncoding), genericParseJSON,
 import Core (ConstraintData, customOptions, AspectData)
 import Data.Aeson.Types (Parser, Array, prependFailure, typeMismatch)
 import Data.Vector (toList)
-import Config.Core (InputConfig, parseInputConfig, RequireConfig (RequireConfig))
+import Config.Core (InputConfig, parseInputConfig, RequireConfig)
 
 data ConstraintConfig =
   ConstraintConfig  { c_name :: String

@@ -1,10 +1,8 @@
 module Preprocessing.Core.Vector where
 
-import Control.Monad (when)
-import Core (rasterCalculator)
-import System.Directory (createDirectoryIfMissing, removePathForcibly)
+import System.Directory (removePathForcibly)
 import Utils (
-  ShouldRemoveStepDir (RemoveStepDir, DontRemoveStepDir),
+  ShouldRemoveStepDir (DontRemoveStepDir),
   guardFile,
   quoteDouble,
   quoteSingle,
