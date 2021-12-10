@@ -14,7 +14,7 @@ import Preprocessing.Core.Vector
     ( addDummyField, bufferVector, rasterizePower, reprojectVector )
 
 residentialConstraint :: ConstraintData -> String -> [String] -> FilePath -> IO FilePath
-residentialConstraint cons border [land_use_in] out = do
+residentialConstraint cons _b [land_use_in] out = do
   guardFile' out $
     void $ stepWrapper DontRemoveStepDir "residentialConstraint"
       (\step_dir -> do

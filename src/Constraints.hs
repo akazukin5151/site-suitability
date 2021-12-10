@@ -38,11 +38,11 @@ processConstraints out_dir border cons = do
                       ]
           h b constraint c_func (const paths) c_output
 
-    h b a pf inf outf = f b is out
+    h b a pf inf outf = f b is out_
       where
         f = a ^. pf
         is = inf a
-        out = out_dir </> "constraints" </> a ^. outf
+        out_ = out_dir </> "constraints" </> a ^. outf
 
 multiplyFinalWithConstraint :: String -> String -> FilePath -> IO FilePath
 multiplyFinalWithConstraint f c out = do

@@ -94,9 +94,9 @@ mkWeightedName x =
       new_dir = takeDirectory dir </> "weighted"           -- "out/x/weighted"
 
 appendFilename :: String -> FilePath -> FilePath
-appendFilename name innerFp = do
+appendFilename name_ innerFp = do
   let base = takeBaseName innerFp
-  let new = base <> name
+  let new = base <> name_
   replaceBaseName innerFp new
 
 sequentialFilenames :: Foldable t => String -> t a -> String -> [String]

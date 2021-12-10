@@ -54,17 +54,17 @@ main' name = do
       let (cr, cons) = configToCriteria c
 
       border <- cropBorder out_dir
-      constraints <- processConstraints out_dir border cons
+      constraints_ <- processConstraints out_dir border cons
       let processed_state = runPreprocessing out_dir border cr
       let standardized_state = runStandardization processed_state
       let weighted_state = runWeights standardized_state
       rasters <- sequence [ state^.result & fromJust | state <- weighted_state]
       final <- multiplyAllCriteria rasters $ out_dir </> "final.tif"
       final_std <- rangeStandardize' final $ out_dir </> "final_std.tif"
-      case constraints of
+      case constraints_ of
         Nothing -> pure ()
-        Just c ->
-          void $ multiplyFinalWithConstraint final_std c $ out_dir </> "final_clipped.tif"
+        Just c_ ->
+          void $ multiplyFinalWithConstraint final_std c_ $ out_dir </> "final_clipped.tif"
 
       pure ()
 
@@ -77,8 +77,8 @@ cropBorder out_dir =
     out_dir </> "az border.shp"
 
 runPreprocessing :: FilePath -> String -> [Criterion] -> [Criterion]
-runPreprocessing out_dir border criteria = do
-  [ g border criterion | criterion <- criteria ]
+runPreprocessing out_dir border criteria_ = do
+  [ g border criterion | criterion <- criteria_ ]
   where
     g border_ criterion =
       case criterion ^. require of
@@ -115,9 +115,9 @@ runPreprocessing out_dir border criteria = do
           out = out_dir </> "preprocessed" </> obj ^. out_f_getter
 
 abstract :: (Criterion -> String -> IO String) -> [Criterion] -> [Criterion]
-abstract func criteria =
+abstract func criteria_ =
   [ criterion & result .~ f criterion
-  | criterion <- criteria
+  | criterion <- criteria_
   ]
   where
     f criterion =
