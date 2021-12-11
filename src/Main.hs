@@ -30,6 +30,7 @@ import Data.Maybe (fromJust)
 import System.FilePath ((</>))
 import Constraints (processConstraints, multiplyFinalWithConstraint)
 import Control.Monad (void)
+import Data.Foldable (for_)
 
 {-# ANN module "HLint: ignore Use camelCase" #-}
 
@@ -61,12 +62,8 @@ main' name = do
       rasters <- sequence [ state^.result & fromJust | state <- weighted_state]
       final <- multiplyAllCriteria rasters $ out_dir </> "final.tif"
       final_std <- rangeStandardize' final $ out_dir </> "final_std.tif"
-      case constraints_ of
-        Nothing -> pure ()
-        Just c_ ->
-          void $ multiplyFinalWithConstraint final_std c_ $ out_dir </> "final_clipped.tif"
-
-      pure ()
+      for_ constraints_ $ \c_ ->
+        multiplyFinalWithConstraint final_std c_ $ out_dir </> "final_clipped.tif"
 
 cropBorder :: FilePath -> IO String
 cropBorder out_dir =
