@@ -1,6 +1,23 @@
+"""
+Previous versions of this had misleading axis labels
+
+The x-axis is "still" the value of the raster cell, however it is unclear
+what the raster layer is representing and the units are. Degree Celsius? Meters? kWh?
+
+The answer is that it represents a generic raster layer. If we pretend that layer
+ranges from 0 to 1, this is how the standardization functions will transform the
+values into suitability scores
+
+"Pretending that the layer ranges from 0 to 1" is the same as "range-standardize
+the layer" (or reverse-range-standardize)
+
+The y-axis "still" represents the standardized value. The standardization functions
+take a raster layer with specific units, and transform them into suitability scores
+for that layer.
+"""
+
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 
 def sigmoid(m, s):
     # There's a ZeroDivisionError even though nothing is zero...
@@ -40,7 +57,16 @@ plt.plot(x, y2, label='gaussian(1, 0.5)')
 plt.plot(x, y3, label='linearL(0.2, 0.8)')
 plt.plot(x, y4, label='linearS(0.2, 0.8)')
 plt.legend()
-plt.xlabel('Value of raster cell')
-plt.ylabel('Standardized value')
+plt.xlabel('Range-standardized value of raster cell')
+plt.ylabel('Standardized value (suitability score) for this raster')
 plt.savefig('vis.png')
-#plt.show()
+
+plt.close()
+plt.plot(x, y1, label='S-curve')
+plt.plot(x, y3, label='Linear with clamps')
+plt.legend()
+plt.xlabel('Range-standardized value of raster cell')
+plt.ylabel('Standardized value (suitability score) for this raster')
+plt.gca().spines['right'].set_visible(False)
+plt.gca().spines['top'].set_visible(False)
+plt.savefig('simplified.png')
