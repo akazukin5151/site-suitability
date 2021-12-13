@@ -101,7 +101,7 @@ appendFilename name_ innerFp = do
 
 sequentialFilenames :: Foldable t => String -> t a -> String -> [String]
 sequentialFilenames step_dir is ext =
-  [ step_dir <> "/step_" <> show idx <> ext
+  [ step_dir </> ("step_" <> show idx <> ext)
   | idx <- [0 .. length is - 1]
   ]
 

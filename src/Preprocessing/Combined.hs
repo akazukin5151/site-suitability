@@ -47,7 +47,7 @@ unionAllVectors is out = do
              let no_fields_i2_ = appendFilename "_no_fields" i2
              i2_no_fields <- removeFields i2 no_fields_i2_
 
-             let step_output = step_dir <> "/step_" <> show this_idx <> ".shp"
+             let step_output = step_dir </> ("step_" <> show this_idx <> ".shp")
              res <- unionVectors i1_no_fields i2_no_fields step_output
              pure (next_idx, res)
         )
@@ -59,7 +59,7 @@ residentialProximityNew border_output_file [land_use_in] out = do
   guardFile' out $
     void $ stepWrapper DontRemoveStepDir "residentialProximity"
       (\step_dir -> do
-          let land_use_out_ = step_dir <> "/land_use_out.tif"
+          let land_use_out_ = step_dir </> "land_use_out.tif"
           land_use_out <-
             cropRasterWithBorder border_buff land_use_in land_use_out_
 
@@ -94,7 +94,7 @@ vectorProximityFromFiles border is out = do
   guardFile' out $
     void $ stepWrapper RemoveStepDir "vectorProximityFromFiles"
       (\step_dir -> do
-          let union_out = step_dir <> "/step_union.shp"
+          let union_out = step_dir </> "step_union.shp"
           print border_buff
           union_out_vec <- cropThenUnionVectors border_buff is union_out
           let prox_out_ = step_dir </> "prox_out.tif"

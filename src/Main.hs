@@ -41,7 +41,7 @@ main = do
 
 main' :: String -> IO ()
 main' name = do
-  mc <- (eitherDecodeFileStrict $ "configs/" <> name <> ".json"
+  mc <- (eitherDecodeFileStrict $ "configs" </> (name <> ".json")
           :: IO (Either String Config))
   case mc of
     Left x -> print x >> error "Decode failed"

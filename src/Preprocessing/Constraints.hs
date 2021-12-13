@@ -111,7 +111,7 @@ vectorConstraintFromFiles cons border is prox_out = do
   guardFile' prox_out $
     void $ stepWrapper RemoveStepDir "vectorConstraintFromFiles"
       (\step_dir -> do
-          let union_out = step_dir <> "/step_union.shp"
+          let union_out = step_dir </> "step_union.shp"
           union_out_vec <- cropThenUnionVectors border is union_out
           vectorConstraint cons union_out_vec prox_out
       )
