@@ -36,8 +36,24 @@ shp <- read_sf("./data/step_union_reproj_with_dummy.shp")
 #png("5000.png")
 #plot(buff5000[, 'FID'], main="5000m")
 
-buff10000 <- st_buffer(shp, 10000)
-png("10000.png")
-plot(buff10000[, 'FID'], main="10000m")
+#buff10000 <- st_buffer(shp, 10000)
+#png("10000.png")
+#plot(buff10000[, 'FID'], main="10000m")
+
+buff20000 <- st_buffer(shp, 20000)
+png("20000.png")
+plot(buff20000[, 'FID'], main="20000m")
+
+buff30000 <- st_buffer(shp, 30000)
+png("30000.png")
+plot(buff30000[, 'FID'], main="30000m")
+
+buff40000 <- st_buffer(shp, 40000)
+png("40000.png")
+plot(buff40000[, 'FID'], main="40000m")
+
+buff50000 <- st_buffer(shp, 50000)
+png("50000.png")
+plot(buff50000[, 'FID'], main="50000m")
 
 dev.off()
