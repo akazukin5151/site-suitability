@@ -3,20 +3,6 @@
 - Modular: if one step fails and aborts the program, once you fix it you can simply re-run the program. it will skip calculating existing files and continue as if it was never aborted
 - Not a black box: every pre-processing, standardization, and weighting step is given back. (TODO) can also force it to not delete intermediate steps. not a black box where you give it a bunch of things and it gives you an answer. it's interactive as well
 
-FIXME: some calculations hang
-
-- These successfully outputs a valid file but never exits. kill `qgis_process` then continue without doing anything else
-    - suh
-        - no observed incidents
-    - watson
-        - `preprocessing/avg insolation.tif`
-        - `preprocessing/residential_prox.tif`
-        - `std/protected_prox_std.tif`
-        - `std/road_prox_std.tif`
-        - `std/power_prox_std.tif`
-    - asakareh
-        - no observed incidents
-
 # Installation
 
 ## Prerequisites
