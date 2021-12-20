@@ -7,7 +7,7 @@ import Preprocessing.Core.Raster
       cropRasterWithBorder,
       cropRasterWithBorderExtents,
       rasterProximity,
-      unionRasters )
+      unionRasters, reprojectRaster )
 import Preprocessing.Core.Vector
     ( addDummyField,
       bufferBorder,
@@ -57,7 +57,7 @@ residentialProximityNew border_output_file [land_use_in] out = do
   let out_dir = takeDirectory border_output_file
   border_buff <- bufferBorder out_dir border_output_file
   guardFile' out $
-    void $ stepWrapper DontRemoveStepDir "residentialProximity"
+    void $ stepWrapper RemoveStepDir "residentialProximity"
       (\step_dir -> do
           let land_use_out_ = step_dir </> "land_use_out.tif"
           land_use_out <-
@@ -68,14 +68,19 @@ residentialProximityNew border_output_file [land_use_in] out = do
                 "0*logical_or(logical_or(A!=22, A!=23), A!=24) + 1*logical_or(logical_or(A==22, A==23), A==24)"
           residential_out <- standardize expr land_use_out residential_out_
 
+          -- reproject to meters
+          let reproj_out_ = step_dir </> "residential_reproj.tif"
+          reproj_out <- reprojectRaster residential_out reproj_out_
+
           let prox_out_ = step_dir </> "prox_out.tif"
-          prox_out <- rasterProximity residential_out prox_out_
+          prox_out <- rasterProximity reproj_out prox_out_
 
           cropRasterWithBorder border_output_file prox_out out
       )
 
 vectorProximityFromUnion :: String -> String -> IO String
 vectorProximityFromUnion union_ prox_out = do
+  -- reproject to meters
   let reproj_out = appendFilename "_reproj" union_
   union <- reprojectVector union_ reproj_out "EPSG:3857"
 

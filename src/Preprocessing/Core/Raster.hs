@@ -99,9 +99,7 @@ rasterProximity i out = do
       [ "-srcband"
       , "1"
       , "-distunits"
-      , "PIXEL"
-      , "-nodata"
-      , "0.0"
+      , "GEO"
       , "-ot"
       , "Float32"
       , "-of"
@@ -109,3 +107,18 @@ rasterProximity i out = do
       , quoteDouble i
       , quoteDouble out
       ]
+
+reprojectRaster :: String -> FilePath -> IO FilePath
+reprojectRaster i out = do
+  guardFile' out $
+    runCmd
+    "gdalwarp"
+    [ "-t_srs"
+    , "EPSG:3857"
+    , "-r"
+    , "near"
+    , "-of"
+    , "GTiff"
+    , quoteDouble i
+    , quoteDouble out
+    ]
