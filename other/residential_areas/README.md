@@ -1,4 +1,4 @@
-TLDR: copy data, downscale it yourself, run `preprocessing.sh`, then `main.sh`
+TLDR: copy data, downscale it yourself, run `preprocessing.sh`, `main.sh`, then `python plot.py`
 
 1. Copying the data to the `data` dir (will probably easier in the future)
     a. Go to `Preprocessed.Combined`, find the `residentialProximity` function and change the stepWrapper's argument to `DontRemoveStepDir`
@@ -17,4 +17,7 @@ TLDR: copy data, downscale it yourself, run `preprocessing.sh`, then `main.sh`
 
 4. Finally, generate the buffers with `main.sh` (takes a long time)
 
-5. (TODO) Plot the buffers
+5. Plot the buffers
+    a. Copy or symlink `border_reproj.shp` from one of the `out` dirs to the `data` dir
+    b. Copy or symlink `residential_prox.tif` from one of the `processed` dirs in the output to the `data` dir
+    c. Run `python plot.py`
