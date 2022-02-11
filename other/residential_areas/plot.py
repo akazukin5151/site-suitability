@@ -33,14 +33,19 @@ for color, dist in zip(colors, dists):
     df = gpd.read_file(f'out/{dist}m_dissolve.shp')
     df.boundary.plot(ax=ax2, label=dist, color=color)
 
-legend_elements = [
-    Line2D([0], [0], color=color, lw=2, label=dist)
-    for color, dist in zip(colors, dists)
-]
+legend_elements = [Line2D([0], [0], color='black', lw=5, label='Study area')]
 
-legend_elements += [Line2D([0], [0], color='black', lw=5, label='Study area')]
+legend_elements += list(reversed([
+    Line2D([0], [0], color=color, lw=2, label=dist + ' m')
+    for color, dist in zip(colors, dists)
+]))
 
 ax2.legend(handles=legend_elements)
+
+ax1.axis('off')
+ax1.set_yticks([])
+ax2.axis('off')
+ax2.set_yticks([])
 
 plt.tight_layout()
 plt.savefig('all.png')
