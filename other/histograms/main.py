@@ -1,22 +1,21 @@
+# Intended to be ran in the current directory
+# (ie, `python main.py` NOT `python histograms/main.py`)
+
+import os
+import sys
 from pathlib import Path
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
 
-_, axes = plt.subplots(
-    ncols=3, nrows=2,
-    sharey=True, gridspec_kw={'wspace': 0}, figsize=(10, 8)
-)
-axes = axes.flatten()
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-for idx, f in enumerate(sorted(Path('data').iterdir())):
-    df = pd.read_csv(f)
-    sns.histplot(x=df['x'], ax=axes[idx])
-    axes[idx].set_title(f.name.replace('.csv', ''))
+from plot_shared_histograms import plot_shared_histograms  # nopep8: E402
 
-axes[0].set_ylabel('Frequency')
-for ax in axes:
-    ax.set_xlabel('Suitability score')
 
-plt.tight_layout()
-plt.savefig('out/hist.png')
+# get_title :: str -> str
+def get_title(f):
+    return f.name.replace('.csv', '')
+
+
+# iterator :: [str]
+iterator = sorted(Path('data').iterdir())
+plot_shared_histograms(iterator, pd.read_csv, get_title, 'out/hist.png')
