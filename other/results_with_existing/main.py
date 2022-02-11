@@ -33,6 +33,7 @@ if not Path(outfile).exists():
 
     files = [
         '../../out/asakareh/final_clipped.tif',
+        '../../out/asakareh_no_res/final_clipped.tif',
         '../../out/watson/final_clipped.tif',
         '../../out/suh/final_clipped.tif',
         '../../out/suh_range/final_clipped.tif',

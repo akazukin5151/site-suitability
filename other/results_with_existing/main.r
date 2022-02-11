@@ -12,6 +12,7 @@ e_y = existing[, 'centroid_y']
 # These images are from the out dir (not public; adapt path)
 files <- list(
     '../../out/asakareh/final_clipped.tif',
+    '../../out/asakareh_no_res/final_clipped.tif',
     '../../out/watson/final_clipped.tif',
     '../../out/suh/final_clipped.tif',
     '../../out/suh_range/final_clipped.tif',
@@ -21,6 +22,7 @@ files <- list(
 
 titles <- list(
     'asakereh',
+    'asakereh_no_res',
     'watson',
     'suh',
     'suh_range',
