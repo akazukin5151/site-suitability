@@ -1,21 +1,18 @@
+from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-a = pd.read_csv('data/a_rs.csv')
-s = pd.read_csv('data/s_rs.csv')
-sr = pd.read_csv('data/sr_rs.csv')
-w = pd.read_csv('data/w_rs.csv')
+_, axes = plt.subplots(
+    ncols=3, nrows=2,
+    sharey=True, gridspec_kw={'wspace': 0}, figsize=(10, 8)
+)
+axes = axes.flatten()
 
-_, axes = plt.subplots(ncols=4, sharey=True, gridspec_kw={'wspace': 0}, figsize=(10, 5))
-sns.histplot(x=a['x'], ax=axes[0])
-sns.histplot(x=s['x'], ax=axes[1])
-sns.histplot(x=sr['x'], ax=axes[2])
-sns.histplot(x=w['x'], ax=axes[3])
-axes[0].set_title('Asakareh')
-axes[1].set_title('Suh')
-axes[2].set_title('Suh range')
-axes[3].set_title('Watson')
+for idx, f in enumerate(sorted(Path('data').iterdir())):
+    df = pd.read_csv(f)
+    sns.histplot(x=df['x'], ax=axes[idx])
+    axes[idx].set_title(f.name.replace('.csv', ''))
 
 axes[0].set_ylabel('Frequency')
 for ax in axes:

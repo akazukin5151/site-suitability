@@ -3,41 +3,42 @@ library(rgdal)
 pdf(NULL)
 
 # These images are from the out dir (not public; adapt path if needed)
-a <- '../../out/asakareh/final_clipped.tif'
-w <- '../../out/watson/final_clipped.tif'
-s <- '../../out/suh/final_clipped.tif'
-sr <- '../../out/suh_range/final_clipped.tif'
+files <- list(
+    '../../out/asakareh/final_clipped.tif',
+    '../../out/watson/final_clipped.tif',
+    '../../out/suh/final_clipped.tif',
+    '../../out/suh_range/final_clipped.tif',
+    '../../out/suh_range_no_elevation/final_clipped.tif',
+    '../../out/suh_range_no_elevation/final_std.tif'
+)
 
-r <- raster(x = s)
-rs <- sample(r, size=10000)
-# replace NA with 0
-rs[is.na(rs[])] <- 0
-write.csv(rs, 'data/s_rs.csv')
-png("out/suh_hist.png")
-hist(rs[rs != 0], xlab="Suitability score", main="Histogram of suitability scores (Suh)")
+names <- list(
+    'asakareh',
+    'watson',
+    'suh',
+    'suh_range',
+    'suh_range_no_elevation',
+    'suh_range_no_elevation_noclip'
+)
 
-r <- raster(x = sr)
-rs <- sample(r, size=10000)
-# replace NA with 0
-rs[is.na(rs[])] <- 0
-write.csv(rs, 'data/sr_rs.csv')
-png("out/suh_range_hist.png")
-hist(rs[rs != 0], xlab="Suitability score", main="Histogram of suitability scores (Suh range)")
+f <- function(file, name) {
+    png_name <- paste('out/', name, '.png', sep='')
+    csv_name <- paste('data/', name, '.csv', sep='')
+    if (!file.exists(png_name) || !file.exists(csv_name)) {
+        r <- raster(x = file)
+        rs <- sample(r, size=10000)
+        # replace NA with 0
+        rs[is.na(rs[])] <- 0
+        write.csv(rs, csv_name)
+        png(paste('out/', name, '.png', sep=''))
+        hist(
+            rs[rs != 0],
+            xlab="Suitability score",
+            main=paste("Histogram of suitability scores", name)
+        )
+    }
+}
 
-r <- raster(x = a)
-rs <- sample(r, size=10000)
-# replace NA with 0
-rs[is.na(rs[])] <- 0
-write.csv(rs, 'data/a_rs.csv')
-png("out/a_hist.png")
-hist(rs[rs != 0], xlab="Suitability score", main="Histogram of suitability scores (Asakereh)")
-
-r <- raster(x = w)
-rs <- sample(r, size=10000)
-# replace NA with 0
-rs[is.na(rs[])] <- 0
-write.csv(rs, 'data/w_rs.csv')
-png("out/w_hist.png")
-hist(rs[rs != 0], xlab="Suitability score", main="Histogram of suitability scores (Watson)")
+mapply(f, files, names)
 
 dev.off()
