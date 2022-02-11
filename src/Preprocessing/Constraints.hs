@@ -48,7 +48,7 @@ abstractConstraint func name expr out = do
       )
 
 elevationConstraint :: ConstraintData -> String -> [String] -> FilePath -> IO FilePath
-elevationConstraint cons border ins = abstractConstraint func expr_ "elevation"
+elevationConstraint cons border ins = abstractConstraint func "elevation" expr_
   where
     dist = show $ distance cons
     expr_ =
@@ -59,7 +59,7 @@ elevationConstraint cons border ins = abstractConstraint func expr_ "elevation"
         cropThenUnionRasters border ins elevation_out
 
 aspectConstraint :: AspectData -> a -> [String] -> FilePath -> IO FilePath
-aspectConstraint cons b ins = abstractConstraint func expr_ "aspect"
+aspectConstraint cons b ins = abstractConstraint func "aspect" expr_
     where
       l1 = show $ limit1 cons
       l2 = show $ limit2 cons
@@ -71,7 +71,7 @@ aspectConstraint cons b ins = abstractConstraint func expr_ "aspect"
           aspectFromElevation b ins aspect_out
 
 slopeConstraint :: ConstraintData -> a -> [String] -> FilePath -> IO FilePath
-slopeConstraint cons b ins = abstractConstraint func expr_ "slope"
+slopeConstraint cons b ins = abstractConstraint func "slope" expr_
     where
       dist = show $ distance cons
       expr_ =
