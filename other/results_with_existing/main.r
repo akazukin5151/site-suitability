@@ -3,37 +3,42 @@
 library(raster)
 pdf(NULL)
 
-# These images are from the out dir (not public; adapt path)
-a <- '../../out/asakareh/final_clipped.tif'
-w <- '../../out/watson/final_clipped.tif'
-s <- '../../out/suh/final_clipped.tif'
-sr <- '../../out/suh_range/final_clipped.tif'
-
 existing <- read.csv(
     '../existing_solar_farms/existing_solar_farms.csv'
 )
-x = existing[, 'centroid_x']
-y = existing[, 'centroid_y']
+e_x = existing[, 'centroid_x']
+e_y = existing[, 'centroid_y']
 
+# These images are from the out dir (not public; adapt path)
+files <- list(
+    '../../out/asakareh/final_clipped.tif',
+    '../../out/watson/final_clipped.tif',
+    '../../out/suh/final_clipped.tif',
+    '../../out/suh_range/final_clipped.tif',
+    '../../out/suh_range_no_elevation/final_clipped.tif',
+    '../../out/suh_range_no_elevation/final_std.tif'
+)
 
-r <- raster(x = s)
-png("out/suh.png")
-plot(r, main="Suh")
-points(x=x, y=y, pch='.', col='red', cex=5)
+titles <- list(
+    'asakereh',
+    'watson',
+    'suh',
+    'suh_range',
+    'suh_range_no_elevation',
+    'suh_range_no_elevation_noclip'
+)
 
-r <- raster(x = sr)
-png("out/suh_range.png")
-plot(r, main="Suh range")
-points(x=x, y=y, pch='.', col='red', cex=5)
+f <- function(file, title) {
+    outfile <- paste('out/', title, '.png', sep='')
+    if (!file.exists(outfile)) {
+        print(outfile)
+        r <- raster(x = file)
+        png(outfile)
+        plot(r, main=title)
+        points(x=e_x, y=e_y, pch='.', col='red', cex=5)
+    }
+}
 
-r <- raster(x = a)
-png("out/asakereh.png")
-plot(r, main="Asakareh")
-points(x=x, y=y, pch='.', col='red', cex=5)
-
-r <- raster(x = w)
-png("out/watson.png")
-plot(r, main='Watson')
-points(x=x, y=y, pch='.', col='red', cex=5)
+mapply(f, files, titles)
 
 dev.off()
