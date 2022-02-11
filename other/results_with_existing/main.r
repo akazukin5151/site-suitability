@@ -7,6 +7,8 @@ pdf(NULL)
 a <- '../../out/asakareh/final_clipped.tif'
 w <- '../../out/watson/final_clipped.tif'
 s <- '../../out/suh/final_clipped.tif'
+sr <- '../../out/suh_range/final_clipped.tif'
+
 existing <- read.csv(
     '../existing_solar_farms/existing_solar_farms.csv'
 )
@@ -17,6 +19,11 @@ y = existing[, 'centroid_y']
 r <- raster(x = s)
 png("out/suh.png")
 plot(r, main="Suh")
+points(x=x, y=y, pch='.', col='red', cex=5)
+
+r <- raster(x = sr)
+png("out/suh_range.png")
+plot(r, main="Suh range")
 points(x=x, y=y, pch='.', col='red', cex=5)
 
 r <- raster(x = a)
