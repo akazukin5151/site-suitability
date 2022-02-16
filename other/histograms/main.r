@@ -36,7 +36,7 @@ f <- function(file, name) {
         hist(
             rs[rs != 0],
             xlab="Suitability score",
-            main=paste("Histogram of suitability scores", name)
+            main="" #paste("Histogram of suitability scores", name)
         )
     }
 }
