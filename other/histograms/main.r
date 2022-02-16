@@ -5,22 +5,16 @@ pdf(NULL)
 # These images are from the out dir (not public; adapt path if needed)
 files <- list(
     '../../out/asakareh/final_clipped.tif',
-    '../../out/asakareh_no_res/final_clipped.tif',
     '../../out/watson/final_clipped.tif',
     '../../out/suh/final_clipped.tif',
-    '../../out/suh_improved/final_clipped.tif',
-    '../../out/suh_range_no_elevation/final_clipped.tif',
-    '../../out/suh_range_no_elevation/final_std.tif'
+    '../../out/suh_improved/final_clipped.tif'
 )
 
 names <- list(
     'asakareh',
-    'asakareh_no_res',
     'watson',
     'suh',
-    'suh_improved',
-    'suh_range_no_elevation',
-    'suh_range_no_elevation_noclip'
+    'suh_improved'
 )
 
 f <- function(file, name) {

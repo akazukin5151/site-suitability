@@ -33,19 +33,16 @@ if not Path(outfile).exists():
 
     files = [
         '../../out/asakareh/final_clipped.tif',
-        '../../out/asakareh_no_res/final_clipped.tif',
         '../../out/watson/final_clipped.tif',
         '../../out/suh/final_clipped.tif',
         '../../out/suh_improved/final_clipped.tif',
-        '../../out/suh_range_no_elevation/final_clipped.tif',
-        '../../out/suh_range_no_elevation/final_std.tif'
     ]
 
     # scores :: [[float]]
     # names :: [str]
     scores = [g(file) for file in files]
     names = [Path(file).parent.name for file in files]
-    names[-1] = 'suh_range_no_elevation_noclip'
+    #names[-1] = 'suh_range_no_elevation_noclip'
 
     df = pd.DataFrame(scores, index=names).reset_index()
     df = df.melt('index')

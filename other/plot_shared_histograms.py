@@ -15,7 +15,7 @@ def plot_shared_histograms(iterator, preprocess_item, get_title, outfile):
     4) Save the output to file `outfile`
     '''
     _, axes = plt.subplots(
-        ncols=3, nrows=3,
+        ncols=2, nrows=2,
         sharey=True, gridspec_kw={'wspace': 0}, figsize=(10, 8)
     )
     axes = axes.flatten()
