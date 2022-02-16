@@ -36,7 +36,7 @@ if not Path(outfile).exists():
         '../../out/asakareh_no_res/final_clipped.tif',
         '../../out/watson/final_clipped.tif',
         '../../out/suh/final_clipped.tif',
-        '../../out/suh_range/final_clipped.tif',
+        '../../out/suh_improved/final_clipped.tif',
         '../../out/suh_range_no_elevation/final_clipped.tif',
         '../../out/suh_range_no_elevation/final_std.tif'
     ]
