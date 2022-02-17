@@ -83,7 +83,7 @@
           "../data/land use/nlcd/land_use_out.tif"
       ],
       "output": "residential_prox.tif",
-      "prep_f": "ResidentialProximityNew",
+      "prep_f": "ResidentialProximity",
       "std_f": {
         "function": "Linear",
         "args": {

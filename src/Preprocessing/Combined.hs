@@ -52,8 +52,8 @@ unionAllVectors is out = do
              pure (next_idx, res)
         )
 
-residentialProximityNew :: String -> [String] -> FilePath -> IO FilePath
-residentialProximityNew border_output_file [land_use_in] out = do
+residentialProximity :: String -> [String] -> FilePath -> IO FilePath
+residentialProximity border_output_file [land_use_in] out = do
   let out_dir = takeDirectory border_output_file
   border_buff <- bufferBorder out_dir border_output_file
   guardFile' out $

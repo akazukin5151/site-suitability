@@ -6,7 +6,7 @@ module Config.Core where
 import Preprocessing.Combined (
   cropThenAverageRasters,
   cropThenUnionRasters,
-  vectorProximityFromFiles, residentialProximityNew
+  vectorProximityFromFiles, residentialProximity
  )
 import Preprocessing.Core.Raster (
   aspectFromElevation,
@@ -22,7 +22,7 @@ data PrepFunctions = CropThenAverageRasters
                    | CropThenUnionRasters
                    | Slope
                    | Aspect
-                   | ResidentialProximityNew
+                   | ResidentialProximity
                    | VectorProximity
                    deriving (Generic, Show)
 
@@ -31,12 +31,12 @@ instance FromJSON PrepFunctions
 
 -- | PrepFunctions -> border -> [input] -> output -> IO preprocessed
 evalPrepF :: PrepFunctions -> String -> [String] -> String -> IO String
-evalPrepF CropThenAverageRasters  = cropThenAverageRasters
-evalPrepF CropThenUnionRasters    = cropThenUnionRasters
-evalPrepF Slope                   = slopeFromElevation
-evalPrepF Aspect                  = aspectFromElevation
-evalPrepF ResidentialProximityNew = residentialProximityNew
-evalPrepF VectorProximity         = vectorProximityFromFiles
+evalPrepF CropThenAverageRasters = cropThenAverageRasters
+evalPrepF CropThenUnionRasters   = cropThenUnionRasters
+evalPrepF Slope                  = slopeFromElevation
+evalPrepF Aspect                 = aspectFromElevation
+evalPrepF ResidentialProximity   = residentialProximity
+evalPrepF VectorProximity        = vectorProximityFromFiles
 
 data RequireConfig =
   RequireConfig { r_name   :: String
