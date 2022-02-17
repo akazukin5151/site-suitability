@@ -5,6 +5,7 @@ pdf(NULL)
 # These images are from the out dir (not public; adapt path if needed)
 files <- list(
     '../../out/asakareh/final_clipped.tif',
+    '../../out/asakareh_improved/final_clipped.tif',
     '../../out/watson/final_clipped.tif',
     '../../out/suh/final_clipped.tif',
     '../../out/suh_improved/final_clipped.tif'
@@ -12,6 +13,7 @@ files <- list(
 
 names <- list(
     'asakareh',
+    'asakareh_improved',
     'watson',
     'suh',
     'suh_improved'

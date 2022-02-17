@@ -46,7 +46,7 @@
           "direction": "LessBetter"
         }
       },
-      "weight": 0.291,
+      "weight": 0.097,
       "require": {
         "r_name": "elevation",
         "r_inputs": [
@@ -75,7 +75,7 @@
           "direction": "MoreBetter"
         }
       },
-      "weight": 0.291
+      "weight": 0.097
     },
     {
       "name": "residential",
@@ -87,12 +87,34 @@
       "std_f": {
         "function": "Linear",
         "args": {
-          "clamp_left": 300,
-          "clamp_right": 700,
+          "clamp_left": 1000,
+          "clamp_right": 5000,
           "direction": "MoreBetter"
         }
       },
-      "weight": 0.291
+      "weight": 0.097
+    },
+    {
+      "name": "roads",
+      "inputs": [
+        "../data/major roads/1.geojson",
+        "../data/major roads/2.geojson",
+        "../data/major roads/3.geojson",
+        "../data/major roads/4.geojson",
+        "../data/major roads/5.geojson",
+        "../data/major roads/6.geojson"
+      ],
+      "output": "road_prox.tif",
+      "prep_f": "VectorProximity",
+      "std_f": {
+        "function": "Linear",
+        "args": {
+          "clamp_left": 1000,
+          "clamp_right": 4000,
+          "direction": "LessBetter"
+        }
+      },
+      "weight": 0.17
     }
   ],
   "constraints": [
@@ -139,7 +161,7 @@
       "c_func": {
         "function": "VectorConstraint",
         "args": {
-          "distance": 10,
+          "distance": 100,
           "c_direction": "MoreBetter"
         }
       }
