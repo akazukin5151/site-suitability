@@ -6,7 +6,7 @@ import Utils
       guardFile', appendFilename )
 import Control.Monad (void)
 import Preprocessing.Core (stepWrapper)
-import Preprocessing.Core.Raster (aspectFromElevation, slopeFromElevation)
+import Preprocessing.Core.Raster (aspectFromElevation, slopeFromElevation,  unionRastersIfMultiple)
 import System.FilePath ((</>))
 import Analysis (standardize, standardizeQGIS)
 import Preprocessing.Combined (cropThenUnionRasters, cropThenUnionVectors)
@@ -14,13 +14,14 @@ import Preprocessing.Core.Vector
     ( addDummyField, bufferVector, rasterizePower, reprojectVector )
 
 residentialConstraint :: ConstraintData -> String -> [String] -> FilePath -> IO FilePath
-residentialConstraint cons _b [land_use_in] out = do
+residentialConstraint cons _b is out = do
   guardFile' out $
     void $ stepWrapper DontRemoveStepDir "residentialConstraint"
       (\step_dir -> do
           -- The or operator doesn't seem to be working, so this is a hack
           let num_file x = step_dir </> (x <> ".tif")
           let expr num i = i <> "!= " <> num
+          land_use_in <- unionRastersIfMultiple pure step_dir is
           out1 <- standardizeQGIS (expr "22") land_use_in $ num_file "22"
           out2 <- standardizeQGIS (expr "23") land_use_in $ num_file "23"
           out3 <- standardizeQGIS (expr "24") land_use_in $ num_file "24"

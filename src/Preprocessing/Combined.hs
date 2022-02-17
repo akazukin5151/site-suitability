@@ -7,7 +7,7 @@ import Preprocessing.Core.Raster
       cropRasterWithBorder,
       cropRasterWithBorderExtents,
       rasterProximity,
-      unionRasters, reprojectRaster )
+      unionRasters, reprojectRaster, unionRastersIfMultiple )
 import Preprocessing.Core.Vector
     ( addDummyField,
       bufferBorder,
@@ -53,15 +53,16 @@ unionAllVectors is out = do
         )
 
 residentialProximity :: String -> [String] -> FilePath -> IO FilePath
-residentialProximity border_output_file [land_use_in] out = do
+residentialProximity border_output_file is out = do
   let out_dir = takeDirectory border_output_file
   border_buff <- bufferBorder out_dir border_output_file
   guardFile' out $
     void $ stepWrapper RemoveStepDir "residentialProximity"
       (\step_dir -> do
           let land_use_out_ = step_dir </> "land_use_out.tif"
-          land_use_out <-
-            cropRasterWithBorder border_buff land_use_in land_use_out_
+          -- union rasters if multiple before running cropRasterWithBorder
+          let func land_use_in = cropRasterWithBorder border_buff land_use_in land_use_out_
+          land_use_out <- unionRastersIfMultiple func step_dir is
 
           let residential_out_ = step_dir </> "residential_only.tif"
           let expr =

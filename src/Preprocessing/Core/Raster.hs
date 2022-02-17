@@ -3,8 +3,18 @@ module Preprocessing.Core.Raster where
 import Core (rasterCalculator)
 import Utils (
   quoteDouble,
-  runCmd, guardFile'
+  runCmd, guardFile', ShouldRemoveStepDir (RemoveStepDir)
  )
+import System.FilePath ((</>))
+import Preprocessing.Core (stepWrapper)
+
+unionRastersIfMultiple :: (String -> IO a) -> FilePath -> [String] -> IO a
+unionRastersIfMultiple func step_dir is = do
+  land_use_in <-
+    case is of
+      [x] -> pure x
+      xs  -> unionRasters xs $ step_dir </> "land_use_in.tif"
+  func land_use_in
 
 cropRasterWithBorder :: String -> String -> String -> IO String
 cropRasterWithBorder bf i out = do
@@ -74,22 +84,20 @@ gdaldem cmd extra i out = do
 slopeCmd :: String -> String -> IO String
 slopeCmd = gdaldem "slope" ["-s", "111000.0", "-compute_edges"]
 
--- TODO: these functions only take exactly one input, but would fail when run
--- (potentially after other calculations)
--- ideally, the config should be validated first
--- but validation makes it more specific and less flexible
--- if it only accepts one input but someone in the future wants to change it to
--- accept multiple inputs, they would have more work
--- (as the validator needs to be changed too)
--- best to let it accept lists, but validate (ensure at runtime) it has only one item
 slopeFromElevation :: a -> [String] -> String -> IO String
-slopeFromElevation _ [is] = slopeCmd is
+slopeFromElevation _ is out =
+  -- If multiple files given, union the rasters then pass to slopeCmd
+  stepWrapper RemoveStepDir "slopeFromElevation"
+    (\step_dir -> unionRastersIfMultiple (`slopeCmd` out) step_dir is)
 
 aspectCmd :: String -> String -> IO String
 aspectCmd = gdaldem "aspect" ["-z", "111000"]
 
 aspectFromElevation :: a -> [String] -> String -> IO String
-aspectFromElevation _ [is] = aspectCmd is
+aspectFromElevation _ is out =
+  -- If multiple files given, union the rasters then pass to aspectCmd
+  stepWrapper RemoveStepDir "aspectFromElevation"
+    (\step_dir -> unionRastersIfMultiple (`aspectCmd` out) step_dir is)
 
 rasterProximity :: String -> String -> IO String
 rasterProximity i out = do
