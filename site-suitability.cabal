@@ -30,6 +30,7 @@ executable site-suitability
                        -Wno-implicit-prelude
                        -Wno-prepositive-qualified-module
                        -Wno-missing-deriving-strategies
+                       -Wno-missing-export-lists
   other-modules:       Preprocessing.Core,
                        Preprocessing.Core.Vector,
                        Preprocessing.Core.Raster,
@@ -48,7 +49,6 @@ executable site-suitability
                        process == 1.6.*,
                        directory == 1.3.*,
                        aeson == 1.5.*,
-                       bytestring >= 0.10.12,
                        utf8-string >= 0,
                        lens == 4.19.*,
                        lens-aeson == 1.1.*,
