@@ -1,4 +1,6 @@
-# doesn't work but works manually
+# constraints seem to be corrupted by themselves, but no problem when clipping the final
+
+# sometimes fails but works manually
 # qgis_process run qgis:rastercalculator -- CELLSIZE=0 CRS='EPSG:4326' EXPRESSION='"out/suh_no_elevation/final_std.tif@1" * "out/suh_no_elevation/constraints.tif@1"' OUTPUT='out/suh_no_elevation/final_clipped.tif' LAYERS="out/suh_no_elevation/final_std.tif" LAYERS="out/suh_no_elevation/constraints.tif"
 
 # Maybe I can remove all the fields first
