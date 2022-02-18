@@ -1,24 +1,25 @@
 module Preprocessing.Core.Raster where
 
-import Core (rasterCalculator)
+import Core (rasterCalculator, Vector (Vector), Raster (Raster), Path (path))
 import Utils (
   quoteDouble,
-  runCmd, guardFile', ShouldRemoveStepDir (RemoveStepDir)
+  runCmd, ShouldRemoveStepDir (RemoveStepDir), guardFileF
  )
 import System.FilePath ((</>))
 import Preprocessing.Core (stepWrapper)
+import Control.Arrow ((<<<))
 
-unionRastersIfMultiple :: (String -> IO a) -> FilePath -> [String] -> IO a
+unionRastersIfMultiple :: (Raster -> IO a) -> FilePath -> [Raster] -> IO a
 unionRastersIfMultiple func step_dir is = do
   land_use_in <-
     case is of
       [x] -> pure x
-      xs  -> unionRasters xs $ step_dir </> "land_use_in.tif"
+      xs  -> unionRasters xs $ Raster $ step_dir </> "land_use_in.tif"
   func land_use_in
 
-cropRasterWithBorder :: String -> String -> String -> IO String
-cropRasterWithBorder bf i out = do
-  guardFile' out $
+cropRasterWithBorder :: Vector -> Raster -> Raster -> IO Raster
+cropRasterWithBorder (Vector bf) (Raster i) (Raster out) = do
+  guardFileF Raster out $
     runCmd
       "gdalwarp"
       [ "-of"
@@ -30,10 +31,10 @@ cropRasterWithBorder bf i out = do
       , quoteDouble out
       ]
 
-cropRasterWithBorderExtents :: String -> String -> String -> IO String
-cropRasterWithBorderExtents bf i out = do
+cropRasterWithBorderExtents :: Vector -> Raster -> Raster -> IO Raster
+cropRasterWithBorderExtents bf (Raster i) (Raster out) = do
   -- TODO get extents automatically
-  guardFile' out $
+  guardFileF Raster out $
     runCmd
       "gdal_translate"
       [ "-projwin"
@@ -47,16 +48,16 @@ cropRasterWithBorderExtents bf i out = do
       , quoteDouble out
       ]
 
-averageRaster :: [String] -> String -> IO String
+averageRaster :: [Raster] -> Raster -> IO Raster
 averageRaster = rasterCalculator calc_expr
   where
     add_expr letters_used = foldr1 (\a b -> a <> "+" <> b) letters_used
     calc_expr letters_used = "(" <> add_expr letters_used <> ")/2"
 
-unionRasters :: [String] -> String -> IO String
-unionRasters is out = do
-  let inputs = map quoteDouble is
-  guardFile' out $
+unionRasters :: [Raster] -> Raster -> IO Raster
+unionRasters is (Raster out) = do
+  let inputs = map (quoteDouble <<< path) is
+  guardFileF Raster out $
     runCmd "gdal_merge.py" $
       [ "-of"
       , "GTiff"
@@ -66,11 +67,11 @@ unionRasters is out = do
 
 gdaldem :: String
         -> [String]
-        -> String
-        -> String
-        -> IO String
-gdaldem cmd extra i out = do
-  guardFile' out $
+        -> Raster
+        -> Raster
+        -> IO Raster
+gdaldem cmd extra (Raster i) (Raster out) = do
+  guardFileF Raster out $
     runCmd "gdaldem" $
       [ cmd
       , quoteDouble i
@@ -81,27 +82,27 @@ gdaldem cmd extra i out = do
       , "1"
       ] <> extra
 
-slopeCmd :: String -> String -> IO String
+slopeCmd :: Raster -> Raster -> IO Raster
 slopeCmd = gdaldem "slope" ["-s", "111000.0", "-compute_edges"]
 
-slopeFromElevation :: a -> [String] -> String -> IO String
+slopeFromElevation :: a -> [Raster] -> Raster -> IO Raster
 slopeFromElevation _ is out =
   -- If multiple files given, union the rasters then pass to slopeCmd
   stepWrapper RemoveStepDir "slopeFromElevation"
     (\step_dir -> unionRastersIfMultiple (`slopeCmd` out) step_dir is)
 
-aspectCmd :: String -> String -> IO String
+aspectCmd :: Raster -> Raster -> IO Raster
 aspectCmd = gdaldem "aspect" ["-z", "111000"]
 
-aspectFromElevation :: a -> [String] -> String -> IO String
+aspectFromElevation :: a -> [Raster] -> Raster -> IO Raster
 aspectFromElevation _ is out =
   -- If multiple files given, union the rasters then pass to aspectCmd
   stepWrapper RemoveStepDir "aspectFromElevation"
     (\step_dir -> unionRastersIfMultiple (`aspectCmd` out) step_dir is)
 
-rasterProximity :: String -> String -> IO String
-rasterProximity i out = do
-  guardFile' out $
+rasterProximity :: Raster -> Raster -> IO Raster
+rasterProximity (Raster i) (Raster out) = do
+  guardFileF Raster out $
     runCmd
       "gdal_proximity.py"
       [ "-srcband"
@@ -116,9 +117,9 @@ rasterProximity i out = do
       , quoteDouble out
       ]
 
-reprojectRaster :: String -> FilePath -> IO FilePath
-reprojectRaster i out = do
-  guardFile' out $
+reprojectRaster :: Raster -> Raster -> IO Raster
+reprojectRaster (Raster i) (Raster out) = do
+  guardFileF Raster out $
     runCmd
     "gdalwarp"
     [ "-t_srs"

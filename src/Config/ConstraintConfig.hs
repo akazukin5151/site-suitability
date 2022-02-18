@@ -3,15 +3,13 @@
 
 module Config.ConstraintConfig where
 
-import Preprocessing.Constraints (
-  vectorConstraintFromFiles, residentialConstraint, elevationConstraint, aspectConstraint, slopeConstraint
- )
 import GHC.Generics (Generic)
 import Data.Aeson ( FromJSON (parseJSON), ToJSON (toEncoding), genericParseJSON, genericToEncoding, Value (Object), (.:), (.:?) )
 import Core (ConstraintData, customOptions, AspectData)
 import Data.Aeson.Types (Parser, Array, prependFailure, typeMismatch)
 import Data.Vector (toList)
 import Config.Core (InputConfig, parseInputConfig, RequireConfig)
+import Config.Adapter (residentialConstraint', vectorConstraintFromFiles', elevationConstraint', aspectConstraint', slopeConstraint')
 
 data ConstraintConfig =
   ConstraintConfig  { c_name :: String
@@ -62,8 +60,8 @@ instance FromJSON ConstraintFunction where
   parseJSON = genericParseJSON customOptions
 
 evalConstraintF :: ConstraintFunction -> String -> [String] -> FilePath -> IO FilePath
-evalConstraintF (ResidentialConstraint c) = residentialConstraint c
-evalConstraintF (VectorConstraint c)      = vectorConstraintFromFiles c
-evalConstraintF (ElevationConstraint c)   = elevationConstraint c
-evalConstraintF (AspectConstraint d)      = aspectConstraint d
-evalConstraintF (SlopeConstraint c)       = slopeConstraint c
+evalConstraintF (ResidentialConstraint c) = residentialConstraint' c
+evalConstraintF (VectorConstraint c)      = vectorConstraintFromFiles' c
+evalConstraintF (ElevationConstraint c)   = elevationConstraint' c
+evalConstraintF (AspectConstraint d)      = aspectConstraint' d
+evalConstraintF (SlopeConstraint c)       = slopeConstraint' c

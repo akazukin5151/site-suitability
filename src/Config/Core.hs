@@ -3,20 +3,12 @@
 
 module Config.Core where
 
-import Preprocessing.Combined (
-  cropThenAverageRasters,
-  cropThenUnionRasters,
-  vectorProximityFromFiles, residentialProximity
- )
-import Preprocessing.Core.Raster (
-  aspectFromElevation,
-  slopeFromElevation,
- )
 import Utils (Require (..))
 import GHC.Generics (Generic)
 import Data.Aeson ( FromJSON (parseJSON), ToJSON (toEncoding), genericParseJSON, defaultOptions, Options (sumEncoding), SumEncoding (TaggedObject, UntaggedValue), genericToEncoding, Value (Object, String), (.:) )
 import Data.Aeson.Types (Parser, parseFail, prependFailure, typeMismatch)
 import Data.Text (unpack)
+import Config.Adapter (cropThenAverageRasters', cropThenUnionRasters', slopeFromElevation', aspectFromElevation', residentialProximity', vectorProximityFromFiles')
 
 data PrepFunctions = CropThenAverageRasters
                    | CropThenUnionRasters
@@ -31,12 +23,12 @@ instance FromJSON PrepFunctions
 
 -- | PrepFunctions -> border -> [input] -> output -> IO preprocessed
 evalPrepF :: PrepFunctions -> String -> [String] -> String -> IO String
-evalPrepF CropThenAverageRasters = cropThenAverageRasters
-evalPrepF CropThenUnionRasters   = cropThenUnionRasters
-evalPrepF Slope                  = slopeFromElevation
-evalPrepF Aspect                 = aspectFromElevation
-evalPrepF ResidentialProximity   = residentialProximity
-evalPrepF VectorProximity        = vectorProximityFromFiles
+evalPrepF CropThenAverageRasters = cropThenAverageRasters'
+evalPrepF CropThenUnionRasters   = cropThenUnionRasters'
+evalPrepF Slope                  = slopeFromElevation'
+evalPrepF Aspect                 = aspectFromElevation'
+evalPrepF ResidentialProximity   = residentialProximity'
+evalPrepF VectorProximity        = vectorProximityFromFiles'
 
 data RequireConfig =
   RequireConfig { r_name   :: String
@@ -115,4 +107,3 @@ parseInputConfig (Object o) = do
 parseInputConfig invalid =
   prependFailure "parsing inputs field failed, " $
     typeMismatch "Object or String" invalid
-

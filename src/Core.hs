@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 module Core where
 
-import Utils ( quoteSingle, quoteDouble, runCmd, guardFile' )
+import Utils ( quoteSingle, quoteDouble, runCmd, guardFile', guardFileF )
 import GHC.Generics (Generic)
 import Data.Aeson
     ( genericParseJSON,
@@ -11,6 +11,25 @@ import Data.Aeson
       Options(sumEncoding),
       SumEncoding(ObjectWithSingleField, TaggedObject),
       ToJSON(toEncoding) )
+
+newtype Raster = Raster String
+newtype Vector = Vector String
+
+rasterToVector :: Raster -> Vector
+rasterToVector (Raster x) = Vector x
+
+vectorToRaster :: Vector -> Raster
+vectorToRaster (Vector x) = Raster x
+
+-- Handy functions to get the inner path, to avoid pattern matching every time
+class Path a where
+  path :: a -> String
+
+instance Path Raster where
+  path (Raster r) = r
+
+instance Path Vector where
+  path (Vector r) = r
 
 data Direction = MoreBetter | LessBetter
   deriving (Generic, Show)
@@ -52,9 +71,9 @@ instance FromJSON AspectData where
 customOptions :: Options
 customOptions = defaultOptions { sumEncoding = TaggedObject "function" "args" }
 
-multiplyRasters :: [String] -> [String] -> String -> IO String
-multiplyRasters extra is out = do
-  guardFile' out $
+multiplyRasters :: [String] -> [Raster] -> Raster -> IO Raster
+multiplyRasters extra is' (Raster out) = do
+  guardFileF Raster out $
     runCmd "qgis_process" $
       [ "run"
       , "qgis:rastercalculator"
@@ -64,12 +83,13 @@ multiplyRasters extra is out = do
       , "OUTPUT=" <> quoteSingle out
       ] <> input_cmds <> extra
     where
+      is = path <$> is'
       input_cmds = ["LAYERS=" <> quoteSingle layer | layer <- is]
       layered = [quoteDouble (x <> "@1") | x <- is]
       calc_expr =
         foldr1 (\a b -> a <> " * " <> b) layered
 
-finalRasterCalculator :: [String] -> String -> IO String
+finalRasterCalculator :: [Raster] -> Raster -> IO Raster
 finalRasterCalculator =
   multiplyRasters
       [ "CRS='EPSG:4326'"
@@ -78,9 +98,9 @@ finalRasterCalculator =
       --, "EXTENT='-114.808333333,-109.050000000,31.333333333,37.000000000'"
       ]
 
-rasterCalculator :: ([String] -> String) -> [String] -> String -> IO String
-rasterCalculator calc_expr is out = do
-  guardFile' out $
+rasterCalculator :: ([String] -> String) -> [Raster] -> Raster -> IO Raster
+rasterCalculator calc_expr is (Raster out) = do
+  guardFileF Raster out $
     runCmd "gdal_calc.py" $
       input_cmds
         <> [ "--outfile"
@@ -89,7 +109,7 @@ rasterCalculator calc_expr is out = do
            ]
     where
       alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-      input_cmds = zipWith f alphabet is
+      input_cmds = zipWith f alphabet (path <$> is)
       f letter i = "-" <> [letter] <> " " <> quoteDouble i
       -- Need to convert from String to [String] (but each element is a single character)
       letters_used = map (:[]) $ take (length is) alphabet

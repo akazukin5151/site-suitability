@@ -1,20 +1,22 @@
 {-# LANGUAGE LambdaCase #-}
 module Constraints where
 
-import Utils (Constraint, c_require, r_prep_f, r_inputs, r_output, c_func, c_inputs, c_output, runCmd, quoteSingle, quoteDouble, Input (Path, RequireOutput), guardFile')
+import Utils (Constraint, c_require, r_prep_f, r_inputs, r_output, c_func, c_inputs, c_output, runCmd, quoteSingle, quoteDouble, Input (Path, RequireOutput), guardFileF)
 import Control.Lens ((^.), (<&>))
 import System.FilePath ((</>))
-import Core (finalRasterCalculator)
+import Core (finalRasterCalculator, Vector, Raster (Raster), Path (path))
 
 
-processConstraints :: FilePath -> String -> [Constraint] -> IO (Maybe FilePath)
+processConstraints :: FilePath -> Vector -> [Constraint] -> IO (Maybe Raster)
 processConstraints _ _ []              = pure Nothing
 processConstraints out_dir border cons = do
   rasts <- sequence [ g border constraint | constraint <- cons ]
   r <- finalRasterCalculator rasts out
   pure $ Just r
   where
-    out = out_dir </> "constraints.tif"
+    out = Raster $ out_dir </> "constraints.tif"
+
+    g :: Vector -> Constraint -> IO Raster
     g b constraint =
       case constraint ^. c_require of
         Nothing -> do
@@ -38,15 +40,15 @@ processConstraints out_dir border cons = do
                       ]
           h b constraint c_func (const paths) c_output
 
-    h b a pf inf outf = f b is out_
+    h b a pf inf outf = Raster <$> f (path b) is out_
       where
         f = a ^. pf
         is = inf a
         out_ = out_dir </> "constraints" </> a ^. outf
 
-multiplyFinalWithConstraint :: String -> String -> FilePath -> IO FilePath
-multiplyFinalWithConstraint f c out = do
-  guardFile' out $
+multiplyFinalWithConstraint :: Raster -> Raster -> Raster -> IO Raster
+multiplyFinalWithConstraint (Raster f) (Raster c) (Raster out) = do
+  guardFileF Raster out $
     runCmd "qgis_process"
       [ "run"
       , "qgis:rastercalculator"

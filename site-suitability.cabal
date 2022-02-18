@@ -44,6 +44,7 @@ executable site-suitability
                        Config.ConstraintConfig,
                        Config.Core,
                        Config.Combined,
+                       Config.Adapter,
                        Metadata
   build-depends:       base >= 4.7 && < 5,
                        process == 1.6.*,

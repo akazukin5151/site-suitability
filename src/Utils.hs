@@ -115,3 +115,8 @@ guardFile' :: FilePath -> IO () -> IO FilePath
 guardFile' o x = do
   guardFile o x
   pure o
+
+guardFileF :: (FilePath -> a) -> FilePath -> IO () -> IO a
+guardFileF f o x = do
+  guardFile o x
+  pure $ f o

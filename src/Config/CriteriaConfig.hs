@@ -3,13 +3,14 @@
 
 module Config.CriteriaConfig where
 
-import Analysis (rangeStandardize, reverseRangeStandardize, standardize, suhSigmoid, gaussian, standardizeQGIS, linearClampedInc, linearClampedDec)
+import Analysis (linearClampedInc, linearClampedDec)
 import GHC.Generics (Generic)
 import Data.Aeson ( FromJSON (parseJSON), ToJSON (toEncoding), genericParseJSON, genericToEncoding, Value (Object), (.:), (.:?) )
 import Core (Direction (LessBetter, MoreBetter), customOptions)
 import Data.Aeson.Types (Parser, Array, prependFailure, typeMismatch)
 import Data.Vector (toList)
 import Config.Core (RequireConfig, InputConfig, PrepFunctions, parseInputConfig)
+import Config.Adapter (rangeStandardize', reverseRangeStandardize', standardize', suhSigmoid', standardizeGaussian)
 
 
 data StdFunctions = RangeLargerBetter
@@ -72,16 +73,15 @@ instance ToJSON ExprFunction
 instance FromJSON ExprFunction
 
 evalStdF :: StdFunctions -> String -> String -> IO String
-evalStdF RangeLargerBetter       = rangeStandardize
-evalStdF RangeSmallerBetter      = reverseRangeStandardize
+evalStdF RangeLargerBetter       = rangeStandardize'
+evalStdF RangeSmallerBetter      = reverseRangeStandardize'
 evalStdF (Linear lf)             = evalLinear lf
 evalStdF (Gaussian g)            = evalGaussian g
-evalStdF (Expr (ExprFunction s)) = standardize s
-evalStdF (SuhSigmoid d)          =
-  standardizeQGIS $ suhSigmoid (midpoint d) (spread d) (divide d)
+evalStdF (Expr (ExprFunction s)) = standardize' s
+evalStdF (SuhSigmoid d)          = suhSigmoid' midpoint spread divide d
 
 evalLinear :: LinearFunction -> String -> String -> IO String
-evalLinear lf = standardize $ f m c x1 x2
+evalLinear lf = standardize' $ f m c x1 x2
   where
     m        = (y2 - y1) / (x2 - x1)
     x1       = clamp_left lf
@@ -93,7 +93,7 @@ evalLinear lf = standardize $ f m c x1 x2
         LessBetter -> (1, 0, linearClampedDec)
 
 evalGaussian :: GaussianFunction -> String -> String -> IO String
-evalGaussian g = standardizeQGIS $ gaussian b c div'
+evalGaussian g = standardizeGaussian b c div'
   where
     div' = g_divide g
     b = peak_x g

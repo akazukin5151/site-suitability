@@ -5,7 +5,6 @@ import System.Directory (createDirectoryIfMissing, removePathForcibly)
 import Utils (
   ShouldRemoveStepDir (RemoveStepDir)
  )
-import System.FilePath ((</>))
 
 stepWrapper :: ShouldRemoveStepDir -> String -> (String -> IO a) -> IO a
 stepWrapper should_remove f_name f = do

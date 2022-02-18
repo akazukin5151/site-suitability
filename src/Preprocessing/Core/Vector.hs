@@ -6,15 +6,16 @@ import Utils (
   guardFile,
   quoteDouble,
   quoteSingle,
-  runCmd, readCmd, guardFile'
+  runCmd, readCmd, guardFileF
  )
 import System.FilePath ((</>))
 import GHC.IO.Exception ( ExitCode(ExitFailure, ExitSuccess) )
 import Preprocessing.Core (stepWrapper)
+import Core (Vector(Vector), Raster (Raster))
 
-cropVectorWithBorder :: String -> String -> String -> IO String
-cropVectorWithBorder bf i out = do
-  guardFile' out $
+cropVectorWithBorder :: Vector -> Vector -> Vector -> IO Vector
+cropVectorWithBorder (Vector bf) (Vector i) (Vector out) = do
+  guardFileF Vector out $
     runCmd
       "qgis_process"
       [ "run"
@@ -25,9 +26,9 @@ cropVectorWithBorder bf i out = do
       , "OUTPUT=" <> quoteDouble out
       ]
 
-reprojectVector :: String -> String -> String -> IO String
-reprojectVector i out projection = do
-  guardFile' out $
+reprojectVector :: Vector -> Vector -> String -> IO Vector
+reprojectVector (Vector i) (Vector out) projection = do
+  guardFileF Vector out $
     runCmd
       "ogr2ogr"
       [ "-t_srs"
@@ -36,9 +37,9 @@ reprojectVector i out projection = do
       , quoteDouble i
       ]
 
-filterVectorByField :: String -> String -> String -> String -> IO String
-filterVectorByField fname fvalue i out = do
-  guardFile' out $
+filterVectorByField :: String -> String -> Vector -> Vector -> IO Vector
+filterVectorByField fname fvalue (Vector i) (Vector out) = do
+  guardFileF Vector out $
     runCmd
       "ogr2ogr"
       [ "-where"
@@ -47,9 +48,9 @@ filterVectorByField fname fvalue i out = do
       , quoteDouble i
       ]
 
-unionVectors :: String -> String -> String -> IO String
-unionVectors i1 i2 out = do
-  guardFile' out $
+unionVectors :: Vector -> Vector -> Vector -> IO Vector
+unionVectors (Vector i1) (Vector i2) (Vector out) = do
+  guardFileF Vector out $
     runCmd
       "qgis_process"
       [ "run"
@@ -60,9 +61,9 @@ unionVectors i1 i2 out = do
       , "OUTPUT=" <> quoteDouble out
       ]
 
-dissolveVector :: String -> String -> IO String
-dissolveVector i out = do
-  guardFile' out $
+dissolveVector :: Vector -> Vector -> IO Vector
+dissolveVector (Vector i) (Vector out) = do
+  guardFileF Vector out $
     runCmd
       "qgis_process"
       [ "run"
@@ -72,9 +73,9 @@ dissolveVector i out = do
       , "OUTPUT=" <> quoteDouble out
       ]
 
-bufferVector :: Double -> String -> String -> IO String
-bufferVector dist i out = do
-  guardFile' out $
+bufferVector :: Double -> Vector -> Vector -> IO Vector
+bufferVector dist (Vector i) (Vector out) = do
+  guardFileF Vector out $
     runCmd
       "qgis_process"
       [ "run"
@@ -86,9 +87,9 @@ bufferVector dist i out = do
       , "OUTPUT=" <> quoteDouble out
       ]
 
-addDummyField :: String -> String -> IO String
-addDummyField i out = do
-  guardFile' out $
+addDummyField :: Vector -> Vector -> IO Vector
+addDummyField (Vector i) (Vector out) = do
+  guardFileF Vector out $
     runCmd
       "qgis_process"
       [ "run"
@@ -101,9 +102,9 @@ addDummyField i out = do
       , "OUTPUT=" <> quoteDouble out
       ]
 
-removeFields :: String -> String -> IO String
-removeFields i out = do
-  guardFile' out $
+removeFields :: Vector -> Vector -> IO Vector
+removeFields (Vector i) (Vector out) = do
+  guardFileF Vector out $
     runCmd
       "qgis_process"
       [ "run"
@@ -114,9 +115,9 @@ removeFields i out = do
       , "FIELDS=\"id\""
       ]
 
-vectorize :: FilePath -> FilePath -> IO FilePath
-vectorize i out = do
-  guardFile' out $
+vectorize :: Raster -> Vector -> IO Vector
+vectorize (Raster i) (Vector out) = do
+  guardFileF Vector out $
     runCmd
       "gdal_polygonize.py"
       [ quoteDouble i
@@ -129,9 +130,9 @@ vectorize i out = do
       , "DN"
       ]
 
-extractVectorAttribute :: String -> String -> String -> FilePath -> IO FilePath
-extractVectorAttribute field value i out = do
-  guardFile' out $
+extractVectorAttribute :: String -> String -> Vector -> Vector -> IO Vector
+extractVectorAttribute field value (Vector i) (Vector out) = do
+  guardFileF Vector out $
     runCmd
       "qgis_process"
       [ "run"
@@ -144,9 +145,9 @@ extractVectorAttribute field value i out = do
       , "OUTPUT=" <> quoteDouble out
       ]
 
-vectorDifference :: String -> String -> FilePath -> IO FilePath
-vectorDifference i ov out = do
-  guardFile' out $ do
+vectorDifference :: Vector -> Vector -> Vector -> IO Vector
+vectorDifference (Vector i) (Vector ov) (Vector out) = do
+  guardFileF Vector out $ do
     (status, _, _) <- readCmd
       "qgis_process"
       [ "run"
@@ -187,17 +188,17 @@ vectorDifference i ov out = do
               pure (step_dir, fixed_out)
             )
 
-bufferBorder :: FilePath -> String -> IO String
+bufferBorder :: String -> Vector -> IO Vector
 bufferBorder out_dir border = do
-  let reproj_out_ = out_dir </> "border_reproj.shp"
+  let reproj_out_ = Vector $ out_dir </> "border_reproj.shp"
   reproj_out <- reprojectVector border reproj_out_ "EPSG:3857"
 
-  let border_buff_out = out_dir </> "border_reproj_buff.shp"
+  let border_buff_out = Vector $ out_dir </> "border_reproj_buff.shp"
   bufferVector 100000 reproj_out border_buff_out
 
-rasterizePower :: String -> String -> IO String
-rasterizePower i out = do
-  guardFile' out $
+rasterizePower :: Vector -> Raster -> IO Raster
+rasterizePower (Vector i) (Raster out) = do
+  guardFileF Raster out $
     runCmd
       "gdal_rasterize"
       [ "-a"

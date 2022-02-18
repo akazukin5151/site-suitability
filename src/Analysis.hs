@@ -3,11 +3,11 @@
 
 module Analysis where
 
-import Core (finalRasterCalculator)
+import Core (finalRasterCalculator, Raster (Raster))
 import Utils (
   quoteDouble,
   quoteSingle,
-  runCmd, guardFile'
+  runCmd, guardFileF
  )
 
 
@@ -26,9 +26,9 @@ import Metadata (getMinMax)
  |     - https://feed.terramonitor.com/normalizing-data-with-gdal_calc-py/
  |     - native:fuzzifyrasterlargemembership
 -}
-standardize :: String -> String -> String -> IO String
-standardize calc_expr i out = do
-  guardFile' out $
+standardize :: String -> Raster -> Raster -> IO Raster
+standardize calc_expr (Raster i) (Raster out) = do
+  guardFileF Raster out $
     runCmd
       "gdal_calc.py"
       [ "-A"
@@ -38,9 +38,9 @@ standardize calc_expr i out = do
       , "--calc=" <> quoteDouble calc_expr
       ]
 
-standardizeQGIS :: (String -> String) -> String -> FilePath -> IO FilePath
-standardizeQGIS calc_expr i out = do
-  guardFile' out $
+standardizeQGIS :: (String -> String) -> Raster -> Raster -> IO Raster
+standardizeQGIS calc_expr (Raster i) (Raster out) = do
+  guardFileF Raster out $
     runCmd "qgis_process"
       [ "run"
       , "qgis:rastercalculator"
@@ -54,9 +54,9 @@ standardizeQGIS calc_expr i out = do
       ]
 
 abstractRangeStandardize :: (Scientific -> Scientific -> String)
-                         -> FilePath -> FilePath -> IO FilePath
-abstractRangeStandardize calc_expr i out = do
-  guardFile' out $ do
+                         -> Raster -> Raster -> IO Raster
+abstractRangeStandardize calc_expr (Raster i) (Raster out) = do
+  guardFileF Raster out $ do
     (min', max') <- getMinMax i
     print (min', max')
     when (min' == 0 && max' == 0) $
@@ -85,10 +85,10 @@ abstractRangeStandardize calc_expr i out = do
 -- but seems like it successfully calculates the result but fails to terminate
 -- if the output file is correct then killing `qgis_process` and continuing
 -- would suffice, and there would be no need to use this function
-rangeStandardize' :: String -> String -> IO String
-rangeStandardize' i o = do
-  guardFile' o $ do
-    (min', max') <- getMinMax i
+rangeStandardize' :: Raster -> Raster -> IO Raster
+rangeStandardize' i@(Raster input) o@(Raster out) = do
+  guardFileF Raster out $ do
+    (min', max') <- getMinMax input
     _ <- standardize (calc_expr min' max') i o
     pure ()
   where
@@ -97,7 +97,7 @@ rangeStandardize' i o = do
     calc_expr min' max' = upper min' <> " / " <> lower max' min'
 
 -- | Higher values are better
-rangeStandardize :: String -> String -> IO String
+rangeStandardize :: Raster -> Raster -> IO Raster
 rangeStandardize = abstractRangeStandardize calc_expr
   where
     upper min'          = "(A -" <> show min' <> ") "
@@ -105,7 +105,7 @@ rangeStandardize = abstractRangeStandardize calc_expr
     calc_expr min' max' = upper min' <> " / " <> lower max' min'
 
 -- | Lower values are better
-reverseRangeStandardize :: String -> String -> IO String
+reverseRangeStandardize :: Raster -> Raster -> IO Raster
 reverseRangeStandardize = abstractRangeStandardize calc_expr
   where
     upper min'          = "(A -" <> show min' <> ") "
@@ -113,8 +113,8 @@ reverseRangeStandardize = abstractRangeStandardize calc_expr
     calc_expr min' max' = "1 - (" <> upper min' <> " / " <> lower max' min' <> ")"
 
 -- | Increasing if spread is negative, decreasing if spread is positive
-suhSigmoid :: Double -> Double -> Maybe Double -> String -> String
-suhSigmoid midpoint spread mdivide i =
+suhSigmoid :: Double -> Double -> Maybe Double -> Raster -> String
+suhSigmoid midpoint spread mdivide (Raster i) =
   upper <> " / " <> lower
     where
       upper = "1"
@@ -150,8 +150,8 @@ linearClampedInc = linearClamped 0 1
 linearClampedDec :: Double -> Double -> Double -> Double -> String
 linearClampedDec = linearClamped 1 0
 
-gaussian :: Double -> Double -> Double -> String -> String
-gaussian b c div' i =
+gaussian :: Double -> Double -> Double -> Raster -> String
+gaussian b c div' (Raster i) =
   exp_ $ "(" <> upper <> " / " <> lower <> ")"
     where
       e = "2.71828182845904523536"
@@ -161,13 +161,13 @@ gaussian b c div' i =
       x_var = "(" <> i <> "/" <> show div' <> ")"
       lower = "(2 * (" <> show c <> ")^2)"
 
-weightCriteria :: Double -> String -> String -> IO String
-weightCriteria w i o = do
-  exists <- doesFileExist o
+weightCriteria :: Double -> Raster -> Raster -> IO Raster
+weightCriteria w i o@(Raster out) = do
+  exists <- doesFileExist out
   if w == 1 && exists
     then pure o
     else standardize ("A*" <> show w) i o
 
 -- | Output is the suitability score
-multiplyAllCriteria :: [String] -> String -> IO String
+multiplyAllCriteria :: [Raster] -> Raster -> IO Raster
 multiplyAllCriteria = finalRasterCalculator

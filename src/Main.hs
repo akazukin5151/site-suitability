@@ -30,6 +30,7 @@ import Data.Maybe (fromJust)
 import System.FilePath ((</>))
 import Constraints (processConstraints, multiplyFinalWithConstraint)
 import Data.Foldable (for_)
+import Core (Vector(Vector), Path (path), Raster (Raster))
 
 {-# ANN module "HLint: ignore Use camelCase" #-}
 
@@ -59,23 +60,24 @@ main' name = do
       let standardized_state = runStandardization processed_state
       let weighted_state = runWeights standardized_state
       rasters <- sequence [ state^.result & fromJust | state <- weighted_state]
-      final <- multiplyAllCriteria rasters $ out_dir </> "final.tif"
-      final_std <- rangeStandardize' final $ out_dir </> "final_std.tif"
+      final <- multiplyAllCriteria (Raster <$> rasters) $ Raster $ out_dir </> "final.tif"
+      final_std <- rangeStandardize' final $ Raster $ out_dir </> "final_std.tif"
       for_ constraints_ $ \c_ ->
-        multiplyFinalWithConstraint final_std c_ $ out_dir </> "final_clipped.tif"
+        multiplyFinalWithConstraint final_std c_ $ Raster $ out_dir </> "final_clipped.tif"
 
-cropBorder :: FilePath -> IO String
+cropBorder :: FilePath -> IO Vector
 cropBorder out_dir =
   filterVectorByField
     "NAME_1"
     "Arizona"
-    "../data/borders/gadm36_USA_1.shp" $
-    out_dir </> "az border.shp"
+    (Vector "../data/borders/gadm36_USA_1.shp") $
+    Vector $ out_dir </> "az border.shp"
 
-runPreprocessing :: FilePath -> String -> [Criterion] -> [Criterion]
+runPreprocessing :: FilePath -> Vector -> [Criterion] -> [Criterion]
 runPreprocessing out_dir border criteria_ = do
   [ g border criterion | criterion <- criteria_ ]
   where
+    g :: Vector -> Criterion -> Criterion
     g border_ criterion =
       case criterion ^. require of
         Nothing -> do
@@ -104,7 +106,7 @@ runPreprocessing out_dir border criteria_ = do
           criterion & result ?~ (req_io >> this_io)
 
     h border_ obj prep_f_getter in_f_getter out_f_getter =
-      prep_f_ border_ is out
+      prep_f_ (path border_) is out
         where
           prep_f_ = obj ^. prep_f_getter
           is = in_f_getter obj
@@ -130,4 +132,7 @@ runStandardization =
 
 runWeights :: [Criterion] -> [Criterion]
 runWeights =
-  abstract (\criterion r -> weightCriteria (criterion ^. weight) r $ mkWeightedName r)
+  abstract (\criterion r -> weightCriteria' (criterion ^. weight) r $ mkWeightedName r)
+
+weightCriteria' :: Double -> String -> String -> IO String
+weightCriteria' w i o = path <$> weightCriteria w (Raster i) (Raster o)
