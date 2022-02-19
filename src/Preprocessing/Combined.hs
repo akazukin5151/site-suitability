@@ -1,32 +1,37 @@
 module Preprocessing.Combined where
 
+import Analysis (standardize)
 import Control.Monad (void, zipWithM_)
-import Preprocessing.Core ( stepWrapper )
-import Preprocessing.Core.Raster
-    ( averageRaster,
-      cropRasterWithBorder,
-      cropRasterWithBorderExtents,
-      rasterProximity,
-      unionRasters, reprojectRaster, unionRastersIfMultiple )
-import Preprocessing.Core.Vector
-    ( addDummyField,
-      bufferBorder,
-      cropVectorWithBorder,
-      dissolveVector,
-      rasterizePower,
-      removeFields,
-      reprojectVector,
-      unionVectors )
+import Core (Path (path), Raster (Raster), Vector (Vector))
+import Preprocessing.Core (stepWrapper)
+import Preprocessing.Core.Raster (
+  averageRaster,
+  cropRasterWithBorder,
+  cropRasterWithBorderExtents,
+  rasterProximity,
+  reprojectRaster,
+  unionRasters,
+  unionRastersIfMultiple,
+ )
+import Preprocessing.Core.Vector (
+  addDummyField,
+  bufferBorder,
+  cropVectorWithBorder,
+  dissolveVector,
+  rasterizePower,
+  removeFields,
+  reprojectVector,
+  unionVectors,
+ )
 import System.Directory (removePathForcibly)
+import System.FilePath (takeDirectory, (</>))
 import Utils (
   ShouldRemoveStepDir (DontRemoveStepDir, RemoveStepDir),
   appendFilename,
   foldM1,
-  sequentialFilenames, guardFileF
+  guardFileF,
+  sequentialFilenames,
  )
-import Analysis (standardize)
-import System.FilePath ((</>), takeDirectory)
-import Core (Vector(Vector), Path (path), Raster (Raster))
 
 unionAllVectors :: [Vector] -> Vector -> IO Vector
 unionAllVectors is out = do
@@ -35,49 +40,50 @@ unionAllVectors is out = do
   res <- dissolveVector final_vec out
   removePathForcibly "internal_steps_unionStep"
   pure res
-    where
-      -- | Union two vectors with the wrapper (puts the result in another dir)
-      unionStep :: (Int, Vector) -> (Int, Vector) -> IO (Int, Vector)
-      unionStep (this_idx, i1) (next_idx, i2) =
-        stepWrapper DontRemoveStepDir "unionStep"
-        (\step_dir -> do
-             let no_fields_i1_ = Vector $ appendFilename "_no_fields" $ path i1
-             i1_no_fields <- removeFields i1 no_fields_i1_
+  where
+    -- Union two vectors with the wrapper (puts the result in another dir)
+    unionStep :: (Int, Vector) -> (Int, Vector) -> IO (Int, Vector)
+    unionStep (this_idx, i1) (next_idx, i2) =
+      stepWrapper DontRemoveStepDir "unionStep"
+        ( \step_dir -> do
+            let no_fields_i1_ = Vector $ appendFilename "_no_fields" $ path i1
+            i1_no_fields <- removeFields i1 no_fields_i1_
 
-             let no_fields_i2_ = Vector $ appendFilename "_no_fields" $ path i2
-             i2_no_fields <- removeFields i2 no_fields_i2_
+            let no_fields_i2_ = Vector $ appendFilename "_no_fields" $ path i2
+            i2_no_fields <- removeFields i2 no_fields_i2_
 
-             let step_output = Vector $ step_dir </> ("step_" <> show this_idx <> ".shp")
-             res <- unionVectors i1_no_fields i2_no_fields step_output
-             pure (next_idx, res)
+            let step_output = Vector $ step_dir </> ("step_" <> show this_idx <> ".shp")
+            res <- unionVectors i1_no_fields i2_no_fields step_output
+            pure (next_idx, res)
         )
 
 residentialProximity :: Vector -> [Raster] -> Raster -> IO Raster
 residentialProximity border_output_file is (Raster out) = do
   border_buff <- bufferBorder "out" border_output_file
   guardFileF Raster out $
-    void $ stepWrapper RemoveStepDir "residentialProximity"
-      (\step_dir -> do
-          let land_use_out_ = Raster $ step_dir </> "land_use_out.tif"
-          -- union rasters if multiple before running cropRasterWithBorder
-          let func land_use_in =
-                cropRasterWithBorder border_buff land_use_in land_use_out_
-          land_use_out <- unionRastersIfMultiple func step_dir is
+    void $
+      stepWrapper RemoveStepDir "residentialProximity"
+        ( \step_dir -> do
+            let land_use_out_ = Raster $ step_dir </> "land_use_out.tif"
+            -- union rasters if multiple before running cropRasterWithBorder
+            let func land_use_in =
+                  cropRasterWithBorder border_buff land_use_in land_use_out_
+            land_use_out <- unionRastersIfMultiple func step_dir is
 
-          let residential_out_ = Raster $ step_dir </> "residential_only.tif"
-          let expr =
-                "0*logical_or(logical_or(A!=22, A!=23), A!=24) + 1*logical_or(logical_or(A==22, A==23), A==24)"
-          residential_out <- standardize expr land_use_out residential_out_
+            let residential_out_ = Raster $ step_dir </> "residential_only.tif"
+            let expr =
+                  "0*logical_or(logical_or(A!=22, A!=23), A!=24) + 1*logical_or(logical_or(A==22, A==23), A==24)"
+            residential_out <- standardize expr land_use_out residential_out_
 
-          -- reproject to meters
-          let reproj_out_ = Raster $ step_dir </> "residential_reproj.tif"
-          reproj_out <- reprojectRaster residential_out reproj_out_
+            -- reproject to meters
+            let reproj_out_ = Raster $ step_dir </> "residential_reproj.tif"
+            reproj_out <- reprojectRaster residential_out reproj_out_
 
-          let prox_out_ = Raster $ step_dir </> "prox_out.tif"
-          prox_out <- rasterProximity reproj_out prox_out_
+            let prox_out_ = Raster $ step_dir </> "prox_out.tif"
+            prox_out <- rasterProximity reproj_out prox_out_
 
-          path <$> cropRasterWithBorder border_output_file prox_out (Raster out)
-      )
+            path <$> cropRasterWithBorder border_output_file prox_out (Raster out)
+        )
 
 vectorProximityFromUnion :: Vector -> Raster -> IO Raster
 vectorProximityFromUnion union_ prox_out = do
@@ -97,42 +103,46 @@ vectorProximityFromFiles :: Vector -> [Vector] -> Raster -> IO Raster
 vectorProximityFromFiles b@(Vector border) is (Raster out) = do
   border_buff <- bufferBorder "out" b
   guardFileF Raster out $
-    void $ stepWrapper RemoveStepDir "vectorProximityFromFiles"
-      (\step_dir -> do
-          let union_out = Vector $ step_dir </> "step_union.shp"
-          print $ path border_buff
-          union_out_vec <- cropThenUnionVectors border_buff is union_out
-          let prox_out_ = Raster $ step_dir </> "prox_out.tif"
-          prox_out <- vectorProximityFromUnion union_out_vec prox_out_
-          path <$> cropRasterWithBorder (Vector border) prox_out (Raster out)
-      )
+    void $
+      stepWrapper RemoveStepDir "vectorProximityFromFiles"
+        ( \step_dir -> do
+            let union_out = Vector $ step_dir </> "step_union.shp"
+            print $ path border_buff
+            union_out_vec <- cropThenUnionVectors border_buff is union_out
+            let prox_out_ = Raster $ step_dir </> "prox_out.tif"
+            prox_out <- vectorProximityFromUnion union_out_vec prox_out_
+            path <$> cropRasterWithBorder (Vector border) prox_out (Raster out)
+        )
 
 cropThenUnionVectors :: Vector -> [Vector] -> Vector -> IO Vector
 cropThenUnionVectors border is o@(Vector out) = do
   guardFileF Vector out $
-    void $ stepWrapper RemoveStepDir "cropThenUnionVectors"
-      (\step_dir -> do
-          let os = Vector <$> sequentialFilenames step_dir is ".shp"
-          zipWithM_ (cropVectorWithBorder border) is os
-          unionAllVectors os o
-      )
+    void $
+      stepWrapper RemoveStepDir "cropThenUnionVectors"
+        ( \step_dir -> do
+            let os = Vector <$> sequentialFilenames step_dir is ".shp"
+            zipWithM_ (cropVectorWithBorder border) is os
+            unionAllVectors os o
+        )
 
 cropThenAverageRasters :: Vector -> [Raster] -> Raster -> IO Raster
 cropThenAverageRasters border is o@(Raster out) = do
   guardFileF Raster out $
-    void $ stepWrapper RemoveStepDir "cropThenAverageRasters"
-      (\step_dir -> do
-          let os = Raster <$> sequentialFilenames step_dir is ".tif"
-          zipWithM_ (cropRasterWithBorder border) is os
-          averageRaster os o
-      )
+    void $
+      stepWrapper RemoveStepDir "cropThenAverageRasters"
+        ( \step_dir -> do
+            let os = Raster <$> sequentialFilenames step_dir is ".tif"
+            zipWithM_ (cropRasterWithBorder border) is os
+            averageRaster os o
+        )
 
 cropThenUnionRasters :: Vector -> [Raster] -> Raster -> IO Raster
 cropThenUnionRasters border is o@(Raster out) = do
   guardFileF Raster out $
-    void $ stepWrapper RemoveStepDir "cropThenUnionRasters"
-      (\step_dir -> do
-          let os = Raster <$> sequentialFilenames step_dir is ".tif"
-          zipWithM_ (cropRasterWithBorderExtents border) is os
-          unionRasters os o
-      )
+    void $
+      stepWrapper RemoveStepDir "cropThenUnionRasters"
+        ( \step_dir -> do
+            let os = Raster <$> sequentialFilenames step_dir is ".tif"
+            zipWithM_ (cropRasterWithBorderExtents border) is os
+            unionRasters os o
+        )

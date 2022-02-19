@@ -1,13 +1,15 @@
 module Preprocessing.Core.Raster where
 
-import Core (rasterCalculator, Vector (Vector), Raster (Raster), Path (path))
-import Utils (
-  quoteDouble,
-  runCmd, ShouldRemoveStepDir (RemoveStepDir), guardFileF
- )
-import System.FilePath ((</>))
-import Preprocessing.Core (stepWrapper)
 import Control.Arrow ((<<<))
+import Core (Path (path), Raster (Raster), Vector (Vector), rasterCalculator)
+import Preprocessing.Core (stepWrapper)
+import System.FilePath ((</>))
+import Utils (
+  ShouldRemoveStepDir (RemoveStepDir),
+  guardFileF,
+  quoteDouble,
+  runCmd,
+ )
 
 unionRastersIfMultiple :: (Raster -> IO a) -> FilePath -> [Raster] -> IO a
 unionRastersIfMultiple func step_dir is = do
@@ -63,7 +65,8 @@ unionRasters is (Raster out) = do
       , "GTiff"
       , "-o"
       , quoteDouble out
-      ] <> inputs
+      ]
+        <> inputs
 
 gdaldem :: String
         -> [String]
@@ -80,7 +83,8 @@ gdaldem cmd extra (Raster i) (Raster out) = do
       , "GTiff"
       , "-b"
       , "1"
-      ] <> extra
+      ]
+        <> extra
 
 slopeCmd :: Raster -> Raster -> IO Raster
 slopeCmd = gdaldem "slope" ["-s", "111000.0", "-compute_edges"]
@@ -121,13 +125,13 @@ reprojectRaster :: Raster -> Raster -> IO Raster
 reprojectRaster (Raster i) (Raster out) = do
   guardFileF Raster out $
     runCmd
-    "gdalwarp"
-    [ "-t_srs"
-    , "EPSG:3857"
-    , "-r"
-    , "near"
-    , "-of"
-    , "GTiff"
-    , quoteDouble i
-    , quoteDouble out
-    ]
+      "gdalwarp"
+      [ "-t_srs"
+      , "EPSG:3857"
+      , "-r"
+      , "near"
+      , "-of"
+      , "GTiff"
+      , quoteDouble i
+      , quoteDouble out
+      ]

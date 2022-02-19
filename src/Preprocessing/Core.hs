@@ -3,7 +3,7 @@ module Preprocessing.Core where
 import Control.Monad (when)
 import System.Directory (createDirectoryIfMissing, removePathForcibly)
 import Utils (
-  ShouldRemoveStepDir (RemoveStepDir)
+  ShouldRemoveStepDir (RemoveStepDir),
  )
 
 stepWrapper :: ShouldRemoveStepDir -> String -> (String -> IO a) -> IO a

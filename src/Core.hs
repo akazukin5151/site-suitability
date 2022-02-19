@@ -1,25 +1,21 @@
 {-# LANGUAGE DeriveGeneric #-}
+
 module Core where
 
-import Utils ( quoteSingle, quoteDouble, runCmd, guardFile', guardFileF )
+import Data.Aeson (
+  FromJSON (parseJSON),
+  Options (sumEncoding),
+  SumEncoding (ObjectWithSingleField, TaggedObject),
+  ToJSON (toEncoding),
+  defaultOptions,
+  genericParseJSON,
+  genericToEncoding,
+ )
 import GHC.Generics (Generic)
-import Data.Aeson
-    ( genericParseJSON,
-      defaultOptions,
-      genericToEncoding,
-      FromJSON(parseJSON),
-      Options(sumEncoding),
-      SumEncoding(ObjectWithSingleField, TaggedObject),
-      ToJSON(toEncoding) )
+import Utils (guardFileF, quoteDouble, quoteSingle, runCmd)
 
 newtype Raster = Raster String
 newtype Vector = Vector String
-
-rasterToVector :: Raster -> Vector
-rasterToVector (Raster x) = Vector x
-
-vectorToRaster :: Vector -> Raster
-vectorToRaster (Vector x) = Raster x
 
 -- Handy functions to get the inner path, to avoid pattern matching every time
 class Path a where
@@ -36,18 +32,18 @@ data Direction = MoreBetter | LessBetter
 
 instance ToJSON Direction where
   toEncoding =
-    genericToEncoding
-      $ defaultOptions { sumEncoding = ObjectWithSingleField }
+    genericToEncoding $
+      defaultOptions {sumEncoding = ObjectWithSingleField}
 
 instance FromJSON Direction where
   parseJSON =
-    genericParseJSON
-      $ defaultOptions { sumEncoding = ObjectWithSingleField }
+    genericParseJSON $
+      defaultOptions {sumEncoding = ObjectWithSingleField}
 
-data ConstraintData =
-  ConstraintData { distance :: Double
-                 , c_direction :: Direction
-                 }
+data ConstraintData = ConstraintData
+  { distance    :: Double
+  , c_direction :: Direction
+  }
   deriving (Generic, Show)
 
 instance ToJSON ConstraintData where
@@ -56,10 +52,10 @@ instance ToJSON ConstraintData where
 instance FromJSON ConstraintData where
   parseJSON = genericParseJSON customOptions
 
-data AspectData =
-  AspectData { limit1 :: Double
-             , limit2 :: Double
-             }
+data AspectData = AspectData
+  { limit1 :: Double
+  , limit2 :: Double
+  }
   deriving (Generic, Show)
 
 instance ToJSON AspectData where
@@ -69,7 +65,7 @@ instance FromJSON AspectData where
   parseJSON = genericParseJSON customOptions
 
 customOptions :: Options
-customOptions = defaultOptions { sumEncoding = TaggedObject "function" "args" }
+customOptions = defaultOptions {sumEncoding = TaggedObject "function" "args"}
 
 multiplyRasters :: [String] -> [Raster] -> Raster -> IO Raster
 multiplyRasters extra is' (Raster out) = do
@@ -81,22 +77,24 @@ multiplyRasters extra is' (Raster out) = do
       , "CELLSIZE=0"
       , "EXPRESSION=" <> quoteSingle calc_expr
       , "OUTPUT=" <> quoteSingle out
-      ] <> input_cmds <> extra
-    where
-      is = path <$> is'
-      input_cmds = ["LAYERS=" <> quoteSingle layer | layer <- is]
-      layered = [quoteDouble (x <> "@1") | x <- is]
-      calc_expr =
-        foldr1 (\a b -> a <> " * " <> b) layered
+      ]
+        <> input_cmds
+        <> extra
+  where
+    is = path <$> is'
+    input_cmds = ["LAYERS=" <> quoteSingle layer | layer <- is]
+    layered = [quoteDouble (x <> "@1") | x <- is]
+    calc_expr =
+      foldr1 (\a b -> a <> " * " <> b) layered
 
 finalRasterCalculator :: [Raster] -> Raster -> IO Raster
 finalRasterCalculator =
   multiplyRasters
-      [ "CRS='EPSG:4326'"
-      -- TODO get extents; got it from insolation, which should be same as border
-      -- extents optional
-      --, "EXTENT='-114.808333333,-109.050000000,31.333333333,37.000000000'"
-      ]
+    [ "CRS='EPSG:4326'"
+    -- TODO get extents; got it from insolation, which should be same as border
+    -- extents optional
+    -- , "EXTENT='-114.808333333,-109.050000000,31.333333333,37.000000000'"
+    ]
 
 rasterCalculator :: ([String] -> String) -> [Raster] -> Raster -> IO Raster
 rasterCalculator calc_expr is (Raster out) = do
@@ -107,9 +105,8 @@ rasterCalculator calc_expr is (Raster out) = do
            , quoteDouble out
            , "--calc=" <> quoteDouble (calc_expr letters_used)
            ]
-    where
-      alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-      input_cmds = zipWith f alphabet (path <$> is)
-      f letter i = "-" <> [letter] <> " " <> quoteDouble i
-      -- Need to convert from String to [String] (but each element is a single character)
-      letters_used = map (:[]) $ take (length is) alphabet
+  where
+    input_cmds = zipWith f ['A'..'Z'] (path <$> is)
+    f letter i = "-" <> [letter] <> " " <> quoteDouble i
+    -- Need to convert from String to [String] (but each element is a single character)
+    letters_used = map (: []) $ take (length is) ['A'..'Z']

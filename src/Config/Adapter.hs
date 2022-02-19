@@ -1,25 +1,29 @@
 module Config.Adapter where
 
+import Analysis (gaussian, rangeStandardize, reverseRangeStandardize, standardize, standardizeQGIS, suhSigmoid)
+import Control.Arrow ((<<<))
+import Core (AspectData, ConstraintData, Path (path), Raster (Raster), Vector (Vector))
 import Preprocessing.Combined (
   cropThenAverageRasters,
   cropThenUnionRasters,
-  vectorProximityFromFiles, residentialProximity
+  residentialProximity,
+  vectorProximityFromFiles,
+ )
+import Preprocessing.Constraints (
+  aspectConstraint,
+  elevationConstraint,
+  residentialConstraint,
+  slopeConstraint,
+  vectorConstraintFromFiles,
  )
 import Preprocessing.Core.Raster (
   aspectFromElevation,
   slopeFromElevation,
  )
-import Preprocessing.Constraints (
-  vectorConstraintFromFiles, residentialConstraint, elevationConstraint, aspectConstraint, slopeConstraint
- )
-import Analysis (rangeStandardize, reverseRangeStandardize, standardize, suhSigmoid, gaussian, standardizeQGIS)
-import Core (Path(path), Vector (Vector), Raster (Raster), AspectData, ConstraintData)
-import Control.Arrow ((<<<))
 
 type CriteriaFunc = String -> [String] -> String -> IO String
 
-criteriaAdapter :: (Vector -> [Raster] -> Raster -> IO Raster)
-                -> CriteriaFunc
+criteriaAdapter :: (Vector -> [Raster] -> Raster -> IO Raster) -> CriteriaFunc
 criteriaAdapter f border is out =
   path <$> f (Vector border) (Raster <$> is) (Raster out)
 
@@ -41,7 +45,6 @@ residentialProximity' = criteriaAdapter residentialProximity
 vectorProximityFromFiles' :: CriteriaFunc
 vectorProximityFromFiles' border is out =
   path <$> vectorProximityFromFiles (Vector border) (Vector <$> is) (Raster out)
-
 
 type ConstraintFunc a = a -> String -> [String] -> String -> IO String
 
@@ -65,7 +68,6 @@ aspectConstraint' = constraintAdapter aspectConstraint
 
 slopeConstraint' :: ConstraintFunc ConstraintData
 slopeConstraint' = constraintAdapter slopeConstraint
-
 
 type StdFunc = String -> String -> IO String
 

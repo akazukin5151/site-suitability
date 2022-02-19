@@ -7,47 +7,46 @@ import Control.Monad (foldM, unless)
 import Lens.Micro.TH (makeLenses)
 import System.Directory (doesFileExist)
 import System.Exit (ExitCode)
-import System.FilePath (replaceBaseName, takeBaseName, takeDirectory, (</>), takeExtension, (<.>))
+import System.FilePath (replaceBaseName, takeBaseName, takeDirectory, takeExtension, (<.>), (</>))
 import System.Process (callCommand, readProcessWithExitCode)
 
-data Input = Path String
-           | RequireOutput String
-           deriving Show
+data Input = Path String | RequireOutput String
+  deriving (Show)
 
-data Criterion =
-  Criterion { _name :: String
-            , _inputs :: [Input]
-            , _output :: String
-            , _prep_f :: String -> [String] -> String -> IO String
-            -- ^         Border -> [input] -> output -> IO preprocessed
-            , _std_f  :: String -> String -> IO String
-            , _weight :: Double
-            , _result :: Maybe (IO String)
-            -- ^ TODO: This should really be in another type like ProcessedCriterion
-            -- and no real reason to keep it inside the IO monad...
-            , _require :: Maybe Require
-            -- ^ Other criteria that must be pre-processed before processing this
-            -- criteria, but they themselves should not count towards the final score
-            }
+data Criterion = Criterion
+  { _name :: String
+  , _inputs :: [Input]
+  , _output :: String
+  , _prep_f :: String -> [String] -> String -> IO String
+  -- ^         Border -> [input] -> output -> IO preprocessed
+  , _std_f :: String -> String -> IO String
+  , _weight :: Double
+  , _result :: Maybe (IO String)
+  -- ^ TODO: This should really be in another type like ProcessedCriterion
+  -- and no real reason to keep it inside the IO monad...
+  , _require :: Maybe Require
+  -- ^ Other criteria that must be pre-processed before processing this
+  -- criteria, but they themselves should not count towards the final score
+  }
 
-data Require =
-  Require { _r_name   :: String
-          , _r_inputs :: [String]
-          , _r_output :: String
-          , _r_prep_f :: String -> [String] -> String -> IO String
-          }
+data Require = Require
+  { _r_name   :: String
+  , _r_inputs :: [String]
+  , _r_output :: String
+  , _r_prep_f :: String -> [String] -> String -> IO String
+  }
 
 makeLenses ''Require
 makeLenses ''Criterion
 
-data Constraint =
-  Constraint { _c_name :: String
-             , _c_inputs :: [Input]
-             , _c_output :: String
-             , _c_func :: String -> [String] -> FilePath -> IO FilePath
-             -- ^ Should always return a raster
-             , _c_require :: Maybe Require
-             }
+data Constraint = Constraint
+  { _c_name   :: String
+  , _c_inputs :: [Input]
+  , _c_output :: String
+  , _c_func   :: String -> [String] -> FilePath -> IO FilePath
+  -- ^ Should always return a raster
+  , _c_require :: Maybe Require
+  }
 
 makeLenses ''Constraint
 
@@ -78,20 +77,20 @@ readCmd process args = do
 mkStdName :: FilePath -> FilePath
 mkStdName x =
   new_dir </> new_name
-    where
-      new_name = takeBaseName x <> "_std" <.> takeExtension x  -- "x_std.shp"
-      dir = takeDirectory x                                    -- "out/x/preprocessed"
-      new_dir = takeDirectory dir </> "std"                    -- "out/x/std"
+  where
+    new_name = takeBaseName x <> "_std" <.> takeExtension x -- "x_std.shp"
+    dir = takeDirectory x -- "out/x/preprocessed"
+    new_dir = takeDirectory dir </> "std" -- "out/x/std"
 
 -- mkWeightedName "out/y/std/x.shp" == "out/y/weighted/x_weighted.shp"
 mkWeightedName :: FilePath -> FilePath
 mkWeightedName x =
   new_dir </> new_name
-    where
-      new_name =
-        takeBaseName x <> "_weighted" <.> takeExtension x  -- "x_weighted.shp"
-      dir = takeDirectory x                                -- "out/x/std"
-      new_dir = takeDirectory dir </> "weighted"           -- "out/x/weighted"
+  where
+    new_name =
+      takeBaseName x <> "_weighted" <.> takeExtension x -- "x_weighted.shp"
+    dir = takeDirectory x -- "out/x/std"
+    new_dir = takeDirectory dir </> "weighted" -- "out/x/weighted"
 
 appendFilename :: String -> FilePath -> FilePath
 appendFilename name_ innerFp = do

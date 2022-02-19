@@ -1,35 +1,38 @@
-{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE RankNTypes #-}
 
 module Main where
 
 import Analysis (
-  weightCriteria, multiplyAllCriteria, rangeStandardize'
+  multiplyAllCriteria,
+  rangeStandardize',
+  weightCriteria,
  )
 import Config.Combined (Config (..), configToCriteria)
-import Control.Lens ((&), (.~), (?~), (^.), (<&>))
-import Utils
-    ( inputs,
-      mkStdName,
-      mkWeightedName,
-      output,
-      prep_f,
-      r_output,
-      r_prep_f,
-      require,
-      result,
-      std_f,
-      weight,
-      Criterion,
-      Input(RequireOutput, Path),
-      Require(_r_inputs) )
-import Data.Aeson (eitherDecodeFileStrict)
-import System.Directory (createDirectoryIfMissing)
-import Data.Maybe (fromJust)
-import System.FilePath ((</>))
-import Constraints (processConstraints, multiplyFinalWithConstraint)
-import Data.Foldable (for_)
+import Constraints (multiplyFinalWithConstraint, processConstraints)
+import Control.Lens ((&), (.~), (<&>), (?~), (^.))
 import Core (Path (path), Raster (Raster), Vector (Vector))
+import Data.Aeson (eitherDecodeFileStrict)
+import Data.Foldable (for_)
+import Data.Maybe (fromJust)
+import System.Directory (createDirectoryIfMissing)
+import System.FilePath ((</>))
+import Utils (
+  Criterion,
+  Input (Path, RequireOutput),
+  Require (_r_inputs),
+  inputs,
+  mkStdName,
+  mkWeightedName,
+  output,
+  prep_f,
+  r_output,
+  r_prep_f,
+  require,
+  result,
+  std_f,
+  weight,
+ )
 
 {-# ANN module "HLint: ignore Use camelCase" #-}
 
@@ -40,8 +43,8 @@ main = do
 
 main' :: String -> IO ()
 main' name = do
-  mc <- (eitherDecodeFileStrict $ "configs" </> (name <> ".json")
-          :: IO (Either String Config))
+  let config_file = "configs" </> (name <> ".json")
+  mc <- eitherDecodeFileStrict config_file :: IO (Either String Config)
   case mc of
     Left x -> print x >> error "Decode failed"
     Right c -> do
@@ -57,7 +60,7 @@ main' name = do
       let processed_state = runPreprocessing out_dir studyArea cr
       let standardized_state = runStandardization processed_state
       let weighted_state = runWeights standardized_state
-      rasters <- sequence [ state^.result & fromJust | state <- weighted_state]
+      rasters <- sequence [state ^. result & fromJust | state <- weighted_state]
       final <- multiplyAllCriteria (Raster <$> rasters) $ Raster $ out_dir </> "final.tif"
       final_std <- rangeStandardize' final $ Raster $ out_dir </> "final_std.tif"
       for_ constraints_ $ \c_ ->
@@ -65,7 +68,7 @@ main' name = do
 
 runPreprocessing :: FilePath -> Vector -> [Criterion] -> [Criterion]
 runPreprocessing out_dir border criteria_ = do
-  [ g border criterion | criterion <- criteria_ ]
+  [g border criterion | criterion <- criteria_]
   where
     g :: Vector -> Criterion -> Criterion
     g border_ criterion =
@@ -75,32 +78,37 @@ runPreprocessing out_dir border criteria_ = do
           -- Force all inputs into strings of filepaths that exist or error
           let msg x =
                 "No requirements specified, but criteria with inputs "
-                <> show is <> " depends on the output of requirement" <> show x
-          let paths = is <&> (\case
-                Path y -> y
-                RequireOutput x -> error $ msg x)
+                  <> show is
+                  <> " depends on the output of requirement"
+                  <> show x
+          let paths =
+                is
+                  <&> ( \case
+                          Path y -> y
+                          RequireOutput x -> error $ msg x
+                      )
           criterion & result ?~ h border_ criterion prep_f (const paths) output
-
         Just req -> do
           -- Set result to make it do req_io first, before doing the actual io
           let req_io = h border_ req r_prep_f _r_inputs r_output
           let is = criterion ^. inputs
           -- Convert requirement output to this outdir (remember that
           -- the outdir depends on the name of the current config file)
-          let paths = [ case x of
-                          Path p -> p
-                          RequireOutput o -> out_dir </> "preprocessed" </> o
-                      | x <- is
-                      ]
+          let paths =
+                [ case x of
+                  Path p -> p
+                  RequireOutput o -> out_dir </> "preprocessed" </> o
+                | x <- is
+                ]
           let this_io = h border_ criterion prep_f (const paths) output
           criterion & result ?~ (req_io >> this_io)
 
     h border_ obj prep_f_getter in_f_getter out_f_getter =
       prep_f_ (path border_) is out
-        where
-          prep_f_ = obj ^. prep_f_getter
-          is = in_f_getter obj
-          out = out_dir </> "preprocessed" </> obj ^. out_f_getter
+      where
+        prep_f_ = obj ^. prep_f_getter
+        is = in_f_getter obj
+        out = out_dir </> "preprocessed" </> obj ^. out_f_getter
 
 abstract :: (Criterion -> String -> IO String) -> [Criterion] -> [Criterion]
 abstract func criteria_ =

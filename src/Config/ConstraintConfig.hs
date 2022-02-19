@@ -3,21 +3,21 @@
 
 module Config.ConstraintConfig where
 
-import GHC.Generics (Generic)
-import Data.Aeson ( FromJSON (parseJSON), ToJSON (toEncoding), genericParseJSON, genericToEncoding, Value (Object), (.:), (.:?) )
-import Core (ConstraintData, customOptions, AspectData)
-import Data.Aeson.Types (Parser, Array, prependFailure, typeMismatch)
+import Config.Adapter (aspectConstraint', elevationConstraint', residentialConstraint', slopeConstraint', vectorConstraintFromFiles')
+import Config.Core (InputConfig, RequireConfig, parseInputConfig)
+import Core (AspectData, ConstraintData, customOptions)
+import Data.Aeson (FromJSON (parseJSON), ToJSON (toEncoding), Value (Object), genericParseJSON, genericToEncoding, (.:), (.:?))
+import Data.Aeson.Types (Array, Parser, prependFailure, typeMismatch)
 import Data.Vector (toList)
-import Config.Core (InputConfig, parseInputConfig, RequireConfig)
-import Config.Adapter (residentialConstraint', vectorConstraintFromFiles', elevationConstraint', aspectConstraint', slopeConstraint')
+import GHC.Generics (Generic)
 
-data ConstraintConfig =
-  ConstraintConfig  { c_name :: String
-                    , c_inputs :: [InputConfig]
-                    , c_output :: String
-                    , c_func :: ConstraintFunction
-                    , c_require :: Maybe RequireConfig
-                    }
+data ConstraintConfig = ConstraintConfig
+  { c_name    :: String
+  , c_inputs  :: [InputConfig]
+  , c_output  :: String
+  , c_func    :: ConstraintFunction
+  , c_require :: Maybe RequireConfig
+  }
   deriving (Generic, Show)
 
 instance ToJSON ConstraintConfig where
@@ -35,13 +35,14 @@ instance FromJSON ConstraintConfig where
     c_func_    <- obj .: "c_func"
     c_require_ <- obj .:? "c_require"
 
-    pure $ ConstraintConfig
-      { c_name    = c_name_
-      , c_inputs  = c_inputs_
-      , c_output  = c_output_
-      , c_func    = c_func_
-      , c_require = c_require_
-      }
+    pure $
+      ConstraintConfig
+        { c_name    = c_name_
+        , c_inputs  = c_inputs_
+        , c_output  = c_output_
+        , c_func    = c_func_
+        , c_require = c_require_
+        }
   parseJSON invalid =
     prependFailure "parsing CriterionConfig failed, " $
       typeMismatch "Object" invalid
@@ -51,7 +52,7 @@ data ConstraintFunction = ResidentialConstraint ConstraintData
                         | ElevationConstraint ConstraintData
                         | AspectConstraint AspectData
                         | SlopeConstraint ConstraintData
-  deriving (Generic, Show)
+                        deriving (Generic, Show)
 
 instance ToJSON ConstraintFunction where
   toEncoding = genericToEncoding customOptions

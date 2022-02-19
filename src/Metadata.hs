@@ -16,26 +16,26 @@ import Data.Text (unpack)
 
 getMinMax :: String -> IO (Scientific, Scientific)
 getMinMax i = do
-    (code, stdout, stderr) <- readCmd "gdalinfo" ["-mm", "-json", i]
-    (min', max') <- case code of
-      ExitFailure _ -> print stderr >> error "Failed to get min and max values"
-      ExitSuccess -> case parseMinMax stdout of
-                       Left x -> error x
-                       Right x -> pure x
-    pure (min', max')
+  (code, stdout, stderr) <- readCmd "gdalinfo" ["-mm", "-json", i]
+  (min', max') <- case code of
+    ExitFailure _ -> print stderr >> error "Failed to get min and max values"
+    ExitSuccess   -> case parseMinMax stdout of
+      Left x  -> error x
+      Right x -> pure x
+  pure (min', max')
 
 parseMinMax :: String -> Either String (Scientific, Scientific)
 parseMinMax stdout = do
   value <-
     case (decode (fromString stdout) :: Maybe Value) of
       Just x -> pure x
-      _ -> Left "Failed to decode JSON"
+      _      -> Left "Failed to decode JSON"
 
   -- band contains an array, and `nth 0` takes the first item in the array
   fst_band <-
     case value ^? key "bands" . nth 0 of
       Just x -> pure x
-      _ -> Left "Failed to get the first band"
+      _      -> Left "Failed to get the first band"
 
   -- The metadata is more accurate than computed
   -- metadata is a nested dict, eg:
@@ -46,20 +46,19 @@ parseMinMax stdout = do
       mmin <-
         case metadata ^? key "STATISTICS_MINIMUM" of
           Just (String m) -> pure m
-          _ -> Left "Failed to decode min"
+          _               -> Left "Failed to decode min"
 
       mmax <-
         case metadata ^? key "STATISTICS_MAXIMUM" of
           Just (String m) -> pure m
-          _ -> Left "Failed to decode max"
+          _               -> Left "Failed to decode max"
 
       pure (read $ unpack mmin, read $ unpack mmax)
-
     _ -> do
       mmin <-
         case fst_band ^? key "computedMin" of
           Just (Number x) -> pure x
-          _ -> Left "Failed to get metadata and computedMin"
+          _               -> Left "Failed to get metadata and computedMin"
 
       mmax <-
         case fst_band ^? key "computedMax" of
