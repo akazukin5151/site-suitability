@@ -2,7 +2,7 @@ module Preprocessing.Combined where
 
 import Analysis (standardize)
 import Control.Monad (void, zipWithM_)
-import Core (Path (path), Raster (Raster), Vector (Vector))
+import Core (Layer (path), Raster (Raster), Vector (Vector))
 import Preprocessing.Core (stepWrapper)
 import Preprocessing.Core.Raster (
   averageRaster,

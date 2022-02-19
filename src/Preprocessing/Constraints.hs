@@ -2,7 +2,7 @@ module Preprocessing.Constraints where
 
 import Analysis (standardize, standardizeQGIS)
 import Control.Monad (void)
-import Core (AspectData (limit1, limit2), ConstraintData (c_direction, distance), Direction (LessBetter, MoreBetter), Path (path), Raster (Raster), Vector (Vector), finalRasterCalculator)
+import Core (AspectData (limit1, limit2), ConstraintData (c_direction, distance), Direction (LessBetter, MoreBetter), Layer (path), Raster (Raster), Vector (Vector), finalRasterCalculator)
 import Preprocessing.Combined (cropThenUnionRasters, cropThenUnionVectors)
 import Preprocessing.Core (stepWrapper)
 import Preprocessing.Core.Raster (aspectFromElevation, slopeFromElevation, unionRastersIfMultiple)

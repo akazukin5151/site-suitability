@@ -3,7 +3,7 @@
 module Constraints where
 
 import Control.Lens ((<&>), (^.))
-import Core (Path (path), Raster (Raster), Vector, finalRasterCalculator)
+import Core (Layer (path), Raster (Raster), Vector, finalRasterCalculator)
 import System.FilePath ((</>))
 import Utils (Constraint, Input (Path, RequireOutput), c_func, c_inputs, c_output, c_require, guardFileF, quoteDouble, quoteSingle, r_inputs, r_output, r_prep_f, runCmd)
 

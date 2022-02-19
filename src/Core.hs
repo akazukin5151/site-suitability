@@ -17,14 +17,15 @@ import Utils (guardFileF, quoteDouble, quoteSingle, runCmd)
 newtype Raster = Raster String
 newtype Vector = Vector String
 
--- Handy functions to get the inner path, to avoid pattern matching every time
-class Path a where
+-- | A GIS Layer. The only requirement is to be able to get the inner path.
+-- This avoid pattern matching every time
+class Layer a where
   path :: a -> String
 
-instance Path Raster where
+instance Layer Raster where
   path (Raster r) = r
 
-instance Path Vector where
+instance Layer Vector where
   path (Vector r) = r
 
 data Direction = MoreBetter | LessBetter

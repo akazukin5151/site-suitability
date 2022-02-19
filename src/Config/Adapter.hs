@@ -2,7 +2,7 @@ module Config.Adapter where
 
 import Analysis (gaussian, rangeStandardize, reverseRangeStandardize, standardize, standardizeQGIS, suhSigmoid)
 import Control.Arrow ((<<<))
-import Core (AspectData, ConstraintData, Path (path), Raster (Raster), Vector (Vector))
+import Core (AspectData, ConstraintData, Layer (path), Raster (Raster), Vector (Vector))
 import Preprocessing.Combined (
   cropThenAverageRasters,
   cropThenUnionRasters,

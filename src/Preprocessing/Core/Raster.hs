@@ -1,7 +1,7 @@
 module Preprocessing.Core.Raster where
 
 import Control.Arrow ((<<<))
-import Core (Path (path), Raster (Raster), Vector (Vector), rasterCalculator)
+import Core (Layer (path), Raster (Raster), Vector (Vector), rasterCalculator)
 import Preprocessing.Core (stepWrapper)
 import System.FilePath ((</>))
 import Utils (

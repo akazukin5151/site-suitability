@@ -11,7 +11,7 @@ import Analysis (
 import Config.Combined (Config (..), configToCriteria)
 import Constraints (multiplyFinalWithConstraint, processConstraints)
 import Control.Lens ((&), (.~), (<&>), (?~), (^.))
-import Core (Path (path), Raster (Raster), Vector (Vector))
+import Core (Layer (path), Raster (Raster), Vector)
 import Data.Aeson (eitherDecodeFileStrict)
 import Data.Foldable (for_)
 import Data.Maybe (fromJust)
