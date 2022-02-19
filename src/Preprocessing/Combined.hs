@@ -54,8 +54,7 @@ unionAllVectors is out = do
 
 residentialProximity :: Vector -> [Raster] -> Raster -> IO Raster
 residentialProximity border_output_file is (Raster out) = do
-  let out_dir = takeDirectory $ path border_output_file
-  border_buff <- bufferBorder out_dir border_output_file
+  border_buff <- bufferBorder "out" border_output_file
   guardFileF Raster out $
     void $ stepWrapper RemoveStepDir "residentialProximity"
       (\step_dir -> do
@@ -96,8 +95,7 @@ vectorProximityFromUnion union_ prox_out = do
 
 vectorProximityFromFiles :: Vector -> [Vector] -> Raster -> IO Raster
 vectorProximityFromFiles b@(Vector border) is (Raster out) = do
-  let out_dir = takeDirectory border
-  border_buff <- bufferBorder out_dir b
+  border_buff <- bufferBorder "out" b
   guardFileF Raster out $
     void $ stepWrapper RemoveStepDir "vectorProximityFromFiles"
       (\step_dir -> do
