@@ -17,10 +17,11 @@ import Data.Aeson
       genericToEncoding )
 import Utils (Criterion(..), Constraint (..), Input (RequireOutput, Path))
 import Config.Core (InputConfig (PathConfig, RequireOutputConfig), evalRequire, evalPrepF)
-import Core (customOptions)
+import Core (customOptions, Vector (Vector))
 
 data Config =
-  Config { criteria :: [CriterionConfig]
+  Config { study_area :: StudyArea
+         , criteria :: [CriterionConfig]
          , constraints :: [ConstraintConfig]
          }
   deriving (Generic, Show)
@@ -31,9 +32,18 @@ instance ToJSON Config where
 instance FromJSON Config where
   parseJSON = genericParseJSON customOptions
 
-configToCriteria :: Config -> ([Criterion], [Constraint])
-configToCriteria Config {criteria = ca, constraints = co} =
-  (map f ca, map g co)
+data StudyArea = StudyArea { file :: String }
+  deriving (Generic, Show)
+
+instance ToJSON StudyArea where
+  toEncoding = genericToEncoding customOptions
+
+instance FromJSON StudyArea where
+  parseJSON = genericParseJSON customOptions
+
+configToCriteria :: Config -> (Vector , [Criterion], [Constraint])
+configToCriteria Config {study_area = sa, criteria = ca, constraints = co} =
+  (Vector $ file sa, map f ca, map g co)
   where
     f :: CriterionConfig -> Criterion
     f cc = Criterion { _name   = name cc

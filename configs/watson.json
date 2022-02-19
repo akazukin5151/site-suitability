@@ -1,4 +1,7 @@
 {
+  "study_area": {
+    "file": "../data/borders/study_area.shp"
+  },
   "criteria": [
     {
       "name": "insolation",

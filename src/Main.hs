@@ -8,7 +8,6 @@ import Analysis (
  )
 import Config.Combined (Config (..), configToCriteria)
 import Control.Lens ((&), (.~), (?~), (^.), (<&>))
-import Preprocessing.Core.Vector (filterVectorByField)
 import Utils
     ( inputs,
       mkStdName,
@@ -30,7 +29,7 @@ import Data.Maybe (fromJust)
 import System.FilePath ((</>))
 import Constraints (processConstraints, multiplyFinalWithConstraint)
 import Data.Foldable (for_)
-import Core (Vector(Vector), Path (path), Raster (Raster))
+import Core (Path (path), Raster (Raster), Vector (Vector))
 
 {-# ANN module "HLint: ignore Use camelCase" #-}
 
@@ -52,11 +51,10 @@ main' name = do
       createDirectoryIfMissing True $ out_dir </> "std"
       createDirectoryIfMissing True $ out_dir </> "weighted"
 
-      let (cr, cons) = configToCriteria c
+      let (studyArea, cr, cons) = configToCriteria c
 
-      border <- cropBorder out_dir
-      constraints_ <- processConstraints out_dir border cons
-      let processed_state = runPreprocessing out_dir border cr
+      constraints_ <- processConstraints out_dir studyArea cons
+      let processed_state = runPreprocessing out_dir studyArea cr
       let standardized_state = runStandardization processed_state
       let weighted_state = runWeights standardized_state
       rasters <- sequence [ state^.result & fromJust | state <- weighted_state]
@@ -64,14 +62,6 @@ main' name = do
       final_std <- rangeStandardize' final $ Raster $ out_dir </> "final_std.tif"
       for_ constraints_ $ \c_ ->
         multiplyFinalWithConstraint final_std c_ $ Raster $ out_dir </> "final_clipped.tif"
-
-cropBorder :: FilePath -> IO Vector
-cropBorder out_dir =
-  filterVectorByField
-    "NAME_1"
-    "Arizona"
-    (Vector "../data/borders/gadm36_USA_1.shp") $
-    Vector $ out_dir </> "az border.shp"
 
 runPreprocessing :: FilePath -> Vector -> [Criterion] -> [Criterion]
 runPreprocessing out_dir border criteria_ = do
