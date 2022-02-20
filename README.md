@@ -34,7 +34,7 @@ Use `conda deactivate`
 Therefore the command to compile and run would be like:
 
 ```
-conda deactivate && stack build --fast && stack exec site-suitability
+conda deactivate && stack build && stack exec site-suitability
 ```
 
 # Q&A
@@ -67,10 +67,6 @@ batch = zipWithM
 - But why Haskell?
 
 Because it is my favourite programming language. I will use Python when appropriate, but Haskell can handle calling CLI commands perfectly
-
-- This code is spaghetti! It's buggy
-
-Apologies, but I have to meet a deadline. Fortunately, Haskell makes refactoring painless
 
 # License
 
