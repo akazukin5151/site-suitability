@@ -131,7 +131,7 @@ cropThenAverageRasters :: String -> Vector -> [Raster] -> Raster -> IO Raster
 cropThenAverageRasters config_name border is o@(Raster out) = do
   guardFileF Raster out $
     void $
-      stepWrapper DontRemoveStepDir config_name "cropThenAverageRasters"
+      stepWrapper RemoveStepDir config_name "cropThenAverageRasters"
         ( \step_dir -> do
             let os = Raster <$> sequentialFilenames step_dir is ".tif"
             zipWithM_ (cropRasterWithBorder border) is os
