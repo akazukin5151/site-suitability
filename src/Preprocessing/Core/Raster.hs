@@ -90,19 +90,19 @@ gdaldem cmd extra (Raster i) (Raster out) = do
 slopeCmd :: Raster -> Raster -> IO Raster
 slopeCmd = gdaldem "slope" ["-s", "111000.0", "-compute_edges"]
 
-slopeFromElevation :: a -> [Raster] -> Raster -> IO Raster
-slopeFromElevation _ is out =
+slopeFromElevation :: String -> a -> [Raster] -> Raster -> IO Raster
+slopeFromElevation config_name _ is out =
   -- If multiple files given, union the rasters then pass to slopeCmd
-  stepWrapper RemoveStepDir "slopeFromElevation"
+  stepWrapper RemoveStepDir config_name "slopeFromElevation"
     (\step_dir -> unionRastersIfMultiple (`slopeCmd` out) step_dir is)
 
 aspectCmd :: Raster -> Raster -> IO Raster
 aspectCmd = gdaldem "aspect" ["-z", "111000"]
 
-aspectFromElevation :: a -> [Raster] -> Raster -> IO Raster
-aspectFromElevation _ is out =
+aspectFromElevation :: String -> a -> [Raster] -> Raster -> IO Raster
+aspectFromElevation config_name _ is out =
   -- If multiple files given, union the rasters then pass to aspectCmd
-  stepWrapper RemoveStepDir "aspectFromElevation"
+  stepWrapper RemoveStepDir config_name "aspectFromElevation"
     (\step_dir -> unionRastersIfMultiple (`aspectCmd` out) step_dir is)
 
 rasterProximity :: Raster -> Raster -> IO Raster

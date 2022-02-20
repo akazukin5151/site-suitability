@@ -19,11 +19,11 @@ import Utils (
   guardFileF,
  )
 
-residentialConstraint :: ConstraintData -> a -> [Raster] -> Raster -> IO Raster
-residentialConstraint cons _ is o@(Raster out) = do
+residentialConstraint :: ConstraintData -> String -> a -> [Raster] -> Raster -> IO Raster
+residentialConstraint cons config_name _ is o@(Raster out) = do
   guardFileF Raster out $
     void $
-      stepWrapper DontRemoveStepDir "residentialConstraint"
+      stepWrapper DontRemoveStepDir config_name "residentialConstraint"
         ( \step_dir -> do
             -- The or operator doesn't seem to be working, so this is a hack
             let num_file x = Raster $ step_dir </> (x <> ".tif")
@@ -44,20 +44,22 @@ residentialConstraint cons _ is o@(Raster out) = do
 abstractConstraint :: (Raster -> IO Raster)
                    -> String
                    -> String
+                   -> String
                    -> Raster
                    -> IO Raster
-abstractConstraint func name expr o@(Raster out) = do
+abstractConstraint func config_name name expr o@(Raster out) = do
   guardFileF Raster out $
     void $
-      stepWrapper RemoveStepDir (name <> "Constraint")
+      stepWrapper RemoveStepDir config_name (name <> "Constraint")
         ( \step_dir -> do
             let constraint_out_ = Raster $ step_dir </> (name <> ".tif")
             constraint_out <- func constraint_out_
             standardize expr constraint_out o
         )
 
-elevationConstraint :: ConstraintData -> Vector -> [Raster] -> Raster -> IO Raster
-elevationConstraint cons border ins = abstractConstraint func "elevation" expr_
+elevationConstraint :: ConstraintData -> String -> Vector -> [Raster] -> Raster -> IO Raster
+elevationConstraint cons config_name border ins =
+  abstractConstraint func "elevation" config_name expr_
   where
     dist = show $ distance cons
     expr_ =
@@ -65,10 +67,11 @@ elevationConstraint cons border ins = abstractConstraint func "elevation" expr_
         LessBetter -> "0*(A>" <> dist <> ") + 1*(A<=" <> dist <> ")"
         MoreBetter -> "0*(A<" <> dist <> ") + 1*(A>=" <> dist <> ")"
     func elevation_out =
-      cropThenUnionRasters border ins elevation_out
+      cropThenUnionRasters config_name border ins elevation_out
 
-aspectConstraint :: AspectData -> Vector -> [Raster] -> Raster -> IO Raster
-aspectConstraint cons b ins = abstractConstraint func "aspect" expr_
+aspectConstraint :: AspectData -> String -> Vector -> [Raster] -> Raster -> IO Raster
+aspectConstraint cons config_name b ins =
+  abstractConstraint func "aspect" config_name expr_
   where
     l1 = show $ limit1 cons
     l2 = show $ limit2 cons
@@ -77,10 +80,10 @@ aspectConstraint cons b ins = abstractConstraint func "aspect" expr_
     and_expr = "logical_and(A>" <> l1 <> ", A<" <> l2 <> ")"
     expr_ = "0*(" <> or_expr <> ")+1*(" <> and_expr <> ")"
     func aspect_out =
-      aspectFromElevation b ins aspect_out
+      aspectFromElevation config_name b ins aspect_out
 
-slopeConstraint :: ConstraintData -> Vector -> [Raster] -> Raster -> IO Raster
-slopeConstraint cons b ins = abstractConstraint func "slope" expr_
+slopeConstraint :: ConstraintData -> String -> Vector -> [Raster] -> Raster -> IO Raster
+slopeConstraint cons config_name b ins = abstractConstraint func "slope" config_name expr_
   where
     dist = show $ distance cons
     expr_ =
@@ -88,7 +91,7 @@ slopeConstraint cons b ins = abstractConstraint func "slope" expr_
         LessBetter -> "0*(A>" <> dist <> ") + 1*(A<=" <> dist <> ")"
         MoreBetter -> "0*(A<" <> dist <> ") + 1*(A>=" <> dist <> ")"
     func slope_out =
-      slopeFromElevation b ins slope_out
+      slopeFromElevation config_name b ins slope_out
 
 {- | The difference between this and vectorProximityFromUnion
  is that this one must have a buffer for lines; it doesn't make sense
@@ -116,13 +119,13 @@ vectorConstraint cons union_ out = do
       -- Need to invert the raster
       standardize "0*(A==1)+1*(A==0)" rast_out out
 
-vectorConstraintFromFiles :: ConstraintData -> Vector -> [Vector] -> Raster -> IO Raster
-vectorConstraintFromFiles cons border is o@(Raster prox_out) = do
+vectorConstraintFromFiles :: ConstraintData -> String -> Vector -> [Vector] -> Raster -> IO Raster
+vectorConstraintFromFiles cons config_name border is o@(Raster prox_out) = do
   guardFileF Raster prox_out $
     void $
-      stepWrapper RemoveStepDir "vectorConstraintFromFiles"
+      stepWrapper RemoveStepDir config_name "vectorConstraintFromFiles"
         ( \step_dir -> do
             let union_out = Vector $ step_dir </> "step_union.shp"
-            union_out_vec <- cropThenUnionVectors border is union_out
+            union_out_vec <- cropThenUnionVectors config_name border is union_out
             vectorConstraint cons union_out_vec o
         )

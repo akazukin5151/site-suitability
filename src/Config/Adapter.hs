@@ -21,11 +21,11 @@ import Preprocessing.Core.Raster (
   slopeFromElevation,
  )
 
-type CriteriaFunc = String -> [String] -> String -> IO String
+type CriteriaFunc = String -> String -> [String] -> String -> IO String
 
-criteriaAdapter :: (Vector -> [Raster] -> Raster -> IO Raster) -> CriteriaFunc
-criteriaAdapter f border is out =
-  path <$> f (Vector border) (Raster <$> is) (Raster out)
+criteriaAdapter :: (String -> Vector -> [Raster] -> Raster -> IO Raster) -> CriteriaFunc
+criteriaAdapter f cn border is out =
+  path <$> f cn (Vector border) (Raster <$> is) (Raster out)
 
 cropThenAverageRasters' :: CriteriaFunc
 cropThenAverageRasters' = criteriaAdapter cropThenAverageRasters
@@ -43,22 +43,22 @@ residentialProximity' :: CriteriaFunc
 residentialProximity' = criteriaAdapter residentialProximity
 
 vectorProximityFromFiles' :: CriteriaFunc
-vectorProximityFromFiles' border is out =
-  path <$> vectorProximityFromFiles (Vector border) (Vector <$> is) (Raster out)
+vectorProximityFromFiles' config_name border is out =
+  path <$> vectorProximityFromFiles config_name (Vector border) (Vector <$> is) (Raster out)
 
-type ConstraintFunc a = a -> String -> [String] -> String -> IO String
+type ConstraintFunc a = a -> String -> String -> [String] -> String -> IO String
 
-constraintAdapter :: (a -> Vector -> [Raster] -> Raster -> IO Raster)
+constraintAdapter :: (a -> String -> Vector -> [Raster] -> Raster -> IO Raster)
                   -> ConstraintFunc a
-constraintAdapter f cons b is out =
-  path <$> f cons (Vector b) (Raster <$> is) (Raster out)
+constraintAdapter f cons config_name  b is out =
+  path <$> f cons config_name (Vector b) (Raster <$> is) (Raster out)
 
 residentialConstraint' :: ConstraintFunc ConstraintData
 residentialConstraint' = constraintAdapter residentialConstraint
 
 vectorConstraintFromFiles' :: ConstraintFunc ConstraintData
-vectorConstraintFromFiles' cons b is out =
-  path <$> vectorConstraintFromFiles cons (Vector b) (Vector <$> is) (Raster out)
+vectorConstraintFromFiles' cons config_name b is out =
+  path <$> vectorConstraintFromFiles cons config_name (Vector b) (Vector <$> is) (Raster out)
 
 elevationConstraint' :: ConstraintFunc ConstraintData
 elevationConstraint' = constraintAdapter elevationConstraint

@@ -21,8 +21,8 @@ data PrepFunctions = CropThenAverageRasters
 instance ToJSON PrepFunctions
 instance FromJSON PrepFunctions
 
--- | PrepFunctions -> border -> [input] -> output -> IO preprocessed
-evalPrepF :: PrepFunctions -> String -> [String] -> String -> IO String
+-- | PrepFunctions -> config_name -> border -> [input] -> output -> IO preprocessed
+evalPrepF :: PrepFunctions -> String -> String -> [String] -> String -> IO String
 evalPrepF CropThenAverageRasters = cropThenAverageRasters'
 evalPrepF CropThenUnionRasters   = cropThenUnionRasters'
 evalPrepF Slope                  = slopeFromElevation'

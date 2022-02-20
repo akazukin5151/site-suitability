@@ -60,7 +60,7 @@ instance ToJSON ConstraintFunction where
 instance FromJSON ConstraintFunction where
   parseJSON = genericParseJSON customOptions
 
-evalConstraintF :: ConstraintFunction -> String -> [String] -> FilePath -> IO FilePath
+evalConstraintF :: ConstraintFunction -> String -> String -> [String] -> FilePath -> IO FilePath
 evalConstraintF (ResidentialConstraint c) = residentialConstraint' c
 evalConstraintF (VectorConstraint c)      = vectorConstraintFromFiles' c
 evalConstraintF (ElevationConstraint c)   = elevationConstraint' c

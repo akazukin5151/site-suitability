@@ -42,13 +42,13 @@ main = do
   mapM_ main' $ words file
 
 main' :: String -> IO ()
-main' name = do
-  let config_file = "configs" </> (name <> ".json")
+main' config_name = do
+  let config_file = "configs" </> (config_name <> ".json")
   mc <- eitherDecodeFileStrict config_file :: IO (Either String Config)
   case mc of
     Left x -> print x >> error "Decode failed"
     Right c -> do
-      let out_dir = "out" </> name
+      let out_dir = "out" </> config_name
       createDirectoryIfMissing True $ out_dir </> "preprocessed"
       createDirectoryIfMissing True $ out_dir </> "constraints"
       createDirectoryIfMissing True $ out_dir </> "std"
@@ -56,8 +56,8 @@ main' name = do
 
       let (studyArea, cr, cons) = configToCriteria c
 
-      constraints_ <- processConstraints out_dir studyArea cons
-      let processed_state = runPreprocessing out_dir studyArea cr
+      constraints_ <- processConstraints config_name studyArea cons
+      let processed_state = runPreprocessing config_name studyArea cr
       let standardized_state = runStandardization processed_state
       let weighted_state = runWeights standardized_state
       rasters <- sequence [state ^. result & fromJust | state <- weighted_state]
@@ -66,10 +66,12 @@ main' name = do
       for_ constraints_ $ \c_ ->
         multiplyFinalWithConstraint final_std c_ $ Raster $ out_dir </> "final_clipped.tif"
 
-runPreprocessing :: FilePath -> Vector -> [Criterion] -> [Criterion]
-runPreprocessing out_dir border criteria_ = do
+runPreprocessing :: String -> Vector -> [Criterion] -> [Criterion]
+runPreprocessing config_name border criteria_ = do
   [g border criterion | criterion <- criteria_]
   where
+    out_dir = "out" </> config_name
+
     g :: Vector -> Criterion -> Criterion
     g border_ criterion =
       case criterion ^. require of
@@ -104,7 +106,7 @@ runPreprocessing out_dir border criteria_ = do
           criterion & result ?~ (req_io >> this_io)
 
     h border_ obj prep_f_getter in_f_getter out_f_getter =
-      prep_f_ (path border_) is out
+      prep_f_ config_name (path border_) is out
       where
         prep_f_ = obj ^. prep_f_getter
         is = in_f_getter obj

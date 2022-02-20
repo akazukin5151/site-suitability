@@ -11,7 +11,6 @@ import Utils (
   guardFileF,
   quoteDouble,
   quoteSingle,
-  readCmd,
   runCmd,
  )
 
@@ -135,50 +134,6 @@ extractVectorAttribute field value (Vector i) (Vector out) = do
       , "INPUT=" <> quoteDouble i
       , "OUTPUT=" <> quoteDouble out
       ]
-
-vectorDifference :: Vector -> Vector -> Vector -> IO Vector
-vectorDifference (Vector i) (Vector ov) (Vector out) = do
-  guardFileF Vector out $ do
-    (status, _, _) <-
-      readCmd
-        "qgis_process"
-        [ "run"
-        , "native:difference"
-        , "--"
-        , "INPUT=" <> quoteDouble i
-        , "OVERLAY=" <> quoteDouble ov
-        , "OUTPUT=" <> quoteDouble out
-        ]
-    case status of
-      ExitSuccess -> pure ()
-      ExitFailure _ -> do
-        (step_dir, fixed_ov) <- fixOverlayGeom ov
-        runCmd
-          "qgis_process"
-          [ "run"
-          , "native:difference"
-          , "--"
-          , "INPUT=" <> quoteDouble i
-          , "OVERLAY=" <> quoteDouble fixed_ov
-          , "OUTPUT=" <> quoteDouble out
-          ]
-        removePathForcibly step_dir
-  where
-    fixOverlayGeom ov' =
-      stepWrapper DontRemoveStepDir "fixOverlayGeom"
-        ( \step_dir -> do
-            let fixed_out = step_dir </> "_fixed.shp"
-            guardFile fixed_out $
-              runCmd
-                "qgis_process"
-                [ "run"
-                , "native:fixgeometries"
-                , "--"
-                , "INPUT=" <> quoteDouble ov'
-                , "OUTPUT=" <> quoteDouble fixed_out
-                ]
-            pure (step_dir, fixed_out)
-        )
 
 bufferBorder :: String -> Vector -> IO Vector
 bufferBorder out_dir border = do

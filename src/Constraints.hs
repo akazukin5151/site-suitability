@@ -7,13 +7,14 @@ import Core (Layer (path), Raster (Raster), Vector, finalRasterCalculator)
 import System.FilePath ((</>))
 import Utils (Constraint, Input (Path, RequireOutput), c_func, c_inputs, c_output, c_require, guardFileF, quoteDouble, quoteSingle, r_inputs, r_output, r_prep_f, runCmd)
 
-processConstraints :: FilePath -> Vector -> [Constraint] -> IO (Maybe Raster)
+processConstraints :: String -> Vector -> [Constraint] -> IO (Maybe Raster)
 processConstraints _ _ []              = pure Nothing
-processConstraints out_dir border cons = do
+processConstraints config_name border cons = do
   rasts <- sequence [g border constraint | constraint <- cons]
   r <- finalRasterCalculator rasts out
   pure $ Just r
   where
+    out_dir = "out" </> config_name
     out = Raster $ out_dir </> "constraints.tif"
 
     g :: Vector -> Constraint -> IO Raster
@@ -45,7 +46,7 @@ processConstraints out_dir border cons = do
                 ]
           h b constraint c_func (const paths) c_output
 
-    h b a pf inf outf = Raster <$> f (path b) is out_
+    h b a pf inf outf = Raster <$> f config_name (path b) is out_
       where
         f = a ^. pf
         is = inf a

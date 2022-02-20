@@ -17,8 +17,8 @@ data Criterion = Criterion
   { _name :: String
   , _inputs :: [Input]
   , _output :: String
-  , _prep_f :: String -> [String] -> String -> IO String
-  -- ^         Border -> [input] -> output -> IO preprocessed
+  , _prep_f :: String -> String -> [String] -> String -> IO String
+  -- ^         Config_name -> Border -> [input] -> output -> IO preprocessed
   , _std_f :: String -> String -> IO String
   , _weight :: Double
   , _result :: Maybe (IO String)
@@ -33,7 +33,7 @@ data Require = Require
   { _r_name   :: String
   , _r_inputs :: [String]
   , _r_output :: String
-  , _r_prep_f :: String -> [String] -> String -> IO String
+  , _r_prep_f :: String -> String -> [String] -> String -> IO String
   }
 
 makeLenses ''Require
@@ -43,7 +43,7 @@ data Constraint = Constraint
   { _c_name   :: String
   , _c_inputs :: [Input]
   , _c_output :: String
-  , _c_func   :: String -> [String] -> FilePath -> IO FilePath
+  , _c_func   :: String -> String -> [String] -> FilePath -> IO FilePath
   -- ^ Should always return a raster
   , _c_require :: Maybe Require
   }
