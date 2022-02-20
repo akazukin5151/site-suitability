@@ -35,7 +35,17 @@
       "name": "temp",
       "inputs": [
         "data/average_temperature/wc2.1_30s_tavg_01.tif",
-        "data/average_temperature/wc2.1_30s_tavg_02.tif"
+        "data/average_temperature/wc2.1_30s_tavg_02.tif",
+        "data/average_temperature/wc2.1_30s_tavg_03.tif",
+        "data/average_temperature/wc2.1_30s_tavg_04.tif",
+        "data/average_temperature/wc2.1_30s_tavg_05.tif",
+        "data/average_temperature/wc2.1_30s_tavg_06.tif",
+        "data/average_temperature/wc2.1_30s_tavg_07.tif",
+        "data/average_temperature/wc2.1_30s_tavg_08.tif",
+        "data/average_temperature/wc2.1_30s_tavg_09.tif",
+        "data/average_temperature/wc2.1_30s_tavg_10.tif",
+        "data/average_temperature/wc2.1_30s_tavg_11.tif",
+        "data/average_temperature/wc2.1_30s_tavg_12.tif"
       ],
       "output": "avg temp.tif",
       "prep_f": "CropThenAverageRasters",
@@ -138,7 +148,8 @@
       "c_name": "protected",
       "c_inputs": [
         "data/protected_areas/WDPA_WDOECM_Feb2022_Public_USA_shp_0/WDPA_WDOECM_Feb2022_Public_USA_shp-polygons.shp",
-        "data/protected_areas/WDPA_WDOECM_Feb2022_Public_USA_shp_1/WDPA_WDOECM_Feb2022_Public_USA_shp-polygons.shp"
+          "data/protected_areas/WDPA_WDOECM_Feb2022_Public_USA_shp_1/WDPA_WDOECM_Feb2022_Public_USA_shp-polygons.shp",
+          "data/protected_areas/WDPA_WDOECM_Feb2022_Public_USA_shp_2/WDPA_WDOECM_Feb2022_Public_USA_shp-polygons.shp"
       ],
       "c_output": "protected constraint.tif",
       "c_func": {
