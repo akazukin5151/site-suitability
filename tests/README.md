@@ -41,27 +41,4 @@ DIRS = {'asakareh_improved', 'asakareh', 'suh', 'suh_improved', 'watson', 'your_
 
 ### Editing the current baseline
 
-Just use a quick python script like:
-
-```py
-import json
-from PIL import Image
-from imagehash import average_hash
-
-with open('./hashes.json', 'r') as f:
-    hashes = json.load(f)
-
-Image.MAX_IMAGE_PIXELS = 588152666
-
-file = '../out/<CONFIG_NAME>/constraints.tif'
-hash_ = average_hash(Image.open(file))
-
-# Adding or mutating the hash for `file`
-hashes[file] = hash_
-
-# Deleting the hash for another file
-del hashes['another_file']
-
-with open('./hashes.json', 'w') as f:
-    json.dump(hashes, f)
-```
+Edit the `file` variable in `edit_hashes.py` and run it
