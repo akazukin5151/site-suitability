@@ -24,7 +24,7 @@ import Preprocessing.Core.Vector (
   unionVectors,
  )
 import System.Directory (removePathForcibly)
-import System.FilePath (takeDirectory, (</>))
+import System.FilePath ((</>))
 import Utils (
   ShouldRemoveStepDir (DontRemoveStepDir, RemoveStepDir),
   appendFilename,

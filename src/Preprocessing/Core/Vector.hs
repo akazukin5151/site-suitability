@@ -39,17 +39,6 @@ reprojectVector (Vector i) (Vector out) projection = do
       , quoteDouble i
       ]
 
-filterVectorByField :: String -> String -> Vector -> Vector -> IO Vector
-filterVectorByField fname fvalue (Vector i) (Vector out) = do
-  guardFileF Vector out $
-    runCmd
-      "ogr2ogr"
-      [ "-where"
-      , quoteDouble (quoteDouble fname <> "=" <> quoteSingle fvalue)
-      , quoteDouble out
-      , quoteDouble i
-      ]
-
 unionVectors :: Vector -> Vector -> Vector -> IO Vector
 unionVectors (Vector i1) (Vector i2) (Vector out) = do
   guardFileF Vector out $
