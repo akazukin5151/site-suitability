@@ -10,3 +10,12 @@ other/histograms/__pycache__
 
 other/__pycache__
 other/protected areas/out
+data/average_temperature
+data/borders
+data/cache
+data/elevation
+data/land_use
+data/power_lines
+data/protected_areas
+data/roads
+data/solar_radiation
