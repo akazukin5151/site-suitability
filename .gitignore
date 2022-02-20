@@ -19,3 +19,4 @@ data/power_lines
 data/protected_areas
 data/roads
 data/solar_radiation
+tests/__pycache__
