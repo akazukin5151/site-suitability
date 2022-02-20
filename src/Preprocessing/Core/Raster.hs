@@ -54,7 +54,8 @@ averageRaster :: [Raster] -> Raster -> IO Raster
 averageRaster = rasterCalculator calc_expr
   where
     add_expr letters_used = foldr1 (\a b -> a <> "+" <> b) letters_used
-    calc_expr letters_used = "(" <> add_expr letters_used <> ")/2"
+    calc_expr letters_used =
+      "(" <> add_expr letters_used <> ")/" <> show (length letters_used)
 
 unionRasters :: [Raster] -> Raster -> IO Raster
 unionRasters is (Raster out) = do
