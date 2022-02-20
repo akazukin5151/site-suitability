@@ -1,7 +1,7 @@
 module Preprocessing.Core.Raster where
 
 import Control.Arrow ((<<<))
-import Core (Layer (path), Raster (Raster), Vector (Vector), rasterCalculator)
+import Core (Layer (path), Raster (Raster), Vector (Vector))
 import Preprocessing.Core (stepWrapper)
 import System.FilePath ((</>))
 import Utils (
@@ -49,13 +49,6 @@ cropRasterWithBorderExtents bf (Raster i) (Raster out) = do
       , quoteDouble i
       , quoteDouble out
       ]
-
-averageRaster :: [Raster] -> Raster -> IO Raster
-averageRaster = rasterCalculator calc_expr
-  where
-    add_expr letters_used = foldr1 (\a b -> a <> "+" <> b) letters_used
-    calc_expr letters_used =
-      "(" <> add_expr letters_used <> ")/" <> show (length letters_used)
 
 unionRasters :: [Raster] -> Raster -> IO Raster
 unionRasters is (Raster out) = do

@@ -2,10 +2,9 @@ module Preprocessing.Combined where
 
 import Analysis (standardize)
 import Control.Monad (void, zipWithM_)
-import Core (Layer (path), Raster (Raster), Vector (Vector))
+import Core (Layer (path), Raster (Raster), Vector (Vector), averageRastersQGIS)
 import Preprocessing.Core (stepWrapper)
 import Preprocessing.Core.Raster (
-  averageRaster,
   cropRasterWithBorder,
   cropRasterWithBorderExtents,
   rasterProximity,
@@ -132,11 +131,11 @@ cropThenAverageRasters :: String -> Vector -> [Raster] -> Raster -> IO Raster
 cropThenAverageRasters config_name border is o@(Raster out) = do
   guardFileF Raster out $
     void $
-      stepWrapper RemoveStepDir config_name "cropThenAverageRasters"
+      stepWrapper DontRemoveStepDir config_name "cropThenAverageRasters"
         ( \step_dir -> do
             let os = Raster <$> sequentialFilenames step_dir is ".tif"
             zipWithM_ (cropRasterWithBorder border) is os
-            averageRaster os o
+            averageRastersQGIS [] os o
         )
 
 cropThenUnionRasters :: String -> Vector -> [Raster] -> Raster -> IO Raster

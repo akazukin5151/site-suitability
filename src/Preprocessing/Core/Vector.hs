@@ -1,13 +1,8 @@
 module Preprocessing.Core.Vector where
 
 import Core (Raster (Raster), Vector (Vector))
-import GHC.IO.Exception (ExitCode (ExitFailure, ExitSuccess))
-import Preprocessing.Core (stepWrapper)
-import System.Directory (removePathForcibly)
 import System.FilePath ((</>))
 import Utils (
-  ShouldRemoveStepDir (DontRemoveStepDir),
-  guardFile,
   guardFileF,
   quoteDouble,
   quoteSingle,

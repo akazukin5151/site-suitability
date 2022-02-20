@@ -97,17 +97,24 @@ finalRasterCalculator =
     -- , "EXTENT='-114.808333333,-109.050000000,31.333333333,37.000000000'"
     ]
 
-rasterCalculator :: ([String] -> String) -> [Raster] -> Raster -> IO Raster
-rasterCalculator calc_expr is (Raster out) = do
+-- TODO: copied & modified from multiplyRasters
+averageRastersQGIS :: [String] -> [Raster] -> Raster -> IO Raster
+averageRastersQGIS extra is' (Raster out) = do
   guardFileF Raster out $
-    runCmd "gdal_calc.py" $
-      input_cmds
-        <> [ "--outfile"
-           , quoteDouble out
-           , "--calc=" <> quoteDouble (calc_expr letters_used)
-           ]
+    runCmd "qgis_process" $
+      [ "run"
+      , "qgis:rastercalculator"
+      , "--"
+      , "CELLSIZE=0"
+      , "EXPRESSION=" <> quoteSingle calc_expr
+      , "OUTPUT=" <> quoteSingle out
+      ]
+        <> input_cmds
+        <> extra
   where
-    input_cmds = zipWith f ['A'..'Z'] (path <$> is)
-    f letter i = "-" <> [letter] <> " " <> quoteDouble i
-    -- Need to convert from String to [String] (but each element is a single character)
-    letters_used = map (: []) $ take (length is) ['A'..'Z']
+    is = path <$> is'
+    input_cmds = ["LAYERS=" <> quoteSingle layer | layer <- is]
+    layered = [quoteDouble (x <> "@1") | x <- is]
+    calc_expr = "(" <> add_expr <> ")/" <> show (length is)
+    add_expr = foldr1 (\a b -> a <> " + " <> b) layered
+
