@@ -22,3 +22,5 @@ data/solar_radiation
 tests/__pycache__
 other/histograms/data
 other/results_with_existing/data
+
+configs/run.txt
