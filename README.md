@@ -19,7 +19,7 @@ $ gdalinfo --version
 GDAL 3.3.1, released 2021/06/28
 ```
 
-For example commands, see `example_ci.yml`
+For example commands, see [example_ci.yml](example_ci.yml)
 
 ## Compile
 
@@ -27,6 +27,22 @@ For example commands, see `example_ci.yml`
 2. stack build
 
 # Usage
+
+## Prerequisites
+
+Download the datasets and do some slight pre-processing. See [README_datasets.md](README_datasets.md) and [data/README.md](./data/README.md).
+
+TLDR: run this
+
+```sh
+cd data
+python download_simple.py
+python download_roads.py
+./crop_border.sh
+./land_use.sh
+```
+
+## Running
 
 (Optional) edit `configs/run.txt`. Put the names of the configs you want to run on a new line. Do not type extensions (`.json`)
 
