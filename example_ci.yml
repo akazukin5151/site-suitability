@@ -1,3 +1,10 @@
+# This is an example CI script for reference. The format is compatible with
+# Github actions
+# CI not setup because of storage limitations; the datasets themselves are 47 GB
+# Nevertheless, it demonstrates how to reproduce the setup from near scratch
+# The only dependencies here are Github's default preinstalled software
+# (https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-Readme.md)
+
 name: master
 
 on:
