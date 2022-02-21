@@ -5,12 +5,12 @@ import Control.Monad (void)
 import Core (AspectData (limit1, limit2), ConstraintData (c_direction, distance), Direction (LessBetter, MoreBetter), Layer (path), Raster (Raster), Vector (Vector), finalRasterCalculator)
 import Preprocessing.Combined (cropThenUnionRasters, cropThenUnionVectors)
 import Preprocessing.Core (stepWrapper)
-import Preprocessing.Core.Raster (aspectFromElevation, slopeFromElevation, unionRastersIfMultiple)
+import Preprocessing.Core.Raster (aspectFromElevation, slopeFromElevation, unionRastersIfMultiple, reprojectRaster, rasterProximity)
 import Preprocessing.Core.Vector (
   addDummyField,
   bufferVector,
   rasterizePower,
-  reprojectVector,
+  reprojectVector
  )
 import System.FilePath ((</>))
 import Utils (
@@ -26,19 +26,40 @@ residentialConstraint cons config_name _ is o@(Raster out) = do
       stepWrapper DontRemoveStepDir config_name "residentialConstraint"
         ( \step_dir -> do
             -- The or operator doesn't seem to be working, so this is a hack
-            let num_file x = Raster $ step_dir </> (x <> ".tif")
-            let expr num i = i <> "!= " <> num
             land_use_in <- unionRastersIfMultiple pure step_dir is
-            out1 <- standardizeQGIS (expr "22") land_use_in $ num_file "22"
-            out2 <- standardizeQGIS (expr "23") land_use_in $ num_file "23"
-            out3 <- standardizeQGIS (expr "24") land_use_in $ num_file "24"
 
-            case c_direction cons of
-              MoreBetter -> finalRasterCalculator [out1, out2, out3] o
-              LessBetter -> do
-                let tmp_ = Raster $ step_dir </> "tmp.tif"
-                tmp <- finalRasterCalculator [out1, out2, out3] tmp_
-                standardize "0*(A==1)+1*(A==0)" tmp o
+            case distance cons of
+              0 -> do
+                let num_file x = Raster $ step_dir </> (x <> ".tif")
+                let expr num i = i <> "!= " <> num
+                out1 <- standardizeQGIS (expr "22") land_use_in $ num_file "22"
+                out2 <- standardizeQGIS (expr "23") land_use_in $ num_file "23"
+                out3 <- standardizeQGIS (expr "24") land_use_in $ num_file "24"
+                case c_direction cons of
+                  MoreBetter -> finalRasterCalculator [out1, out2, out3] o
+                  LessBetter -> do
+                    let tmp_ = Raster $ step_dir </> "tmp.tif"
+                    tmp <- finalRasterCalculator [out1, out2, out3] tmp_
+                    standardize "0*(A==1)+1*(A==0)" tmp o
+              d -> do
+                -- Copied from residentialProximity
+                -- reproject to meters
+                let residential_out_ = Raster $ step_dir </> "residential_only.tif"
+                let expr =
+                      "0*logical_or(logical_or(A!=22, A!=23), A!=24) + 1*logical_or(logical_or(A==22, A==23), A==24)"
+                residential_out <- standardize expr land_use_in residential_out_
+
+                let reproj_out_ = Raster $ step_dir </> "residential_reproj.tif"
+                reproj_out <- reprojectRaster residential_out reproj_out_
+
+                let prox_out_ = Raster $ step_dir </> "prox_out.tif"
+                prox_out <- rasterProximity reproj_out prox_out_
+
+                let expr =
+                      case c_direction cons of
+                        MoreBetter -> "1*(A>=" <> show d <> ")+0*(A<" <> show d <> ")"
+                        LessBetter -> "0*(A>=" <> show d <> ")+1*(A<" <> show d <> ")"
+                standardize expr prox_out o
         )
 
 abstractConstraint :: (Raster -> IO Raster)
