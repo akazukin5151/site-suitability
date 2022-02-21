@@ -9,7 +9,7 @@ import Preprocessing.Core.Raster (aspectFromElevation, slopeFromElevation, union
 import Preprocessing.Core.Vector (
   addDummyField,
   bufferVector,
-  rasterizePower,
+  rasterizeVector,
   reprojectVector
  )
 import System.FilePath ((</>))
@@ -133,10 +133,10 @@ vectorConstraint cons union_ out = do
   dummy_out <- addDummyField buf_out dummy_out_
 
   case c_direction cons of
-    LessBetter -> rasterizePower dummy_out out
+    LessBetter -> rasterizeVector dummy_out out
     MoreBetter -> do
       let rast_out_ = Raster $ appendFilename "_rasterized" $ path buf_out
-      rast_out <- rasterizePower dummy_out rast_out_
+      rast_out <- rasterizeVector dummy_out rast_out_
       -- Need to invert the raster
       standardize "0*(A==1)+1*(A==0)" rast_out out
 

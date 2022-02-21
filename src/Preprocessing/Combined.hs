@@ -17,7 +17,7 @@ import Preprocessing.Core.Vector (
   bufferBorder,
   cropVectorWithBorder,
   dissolveVector,
-  rasterizePower,
+  rasterizeVector,
   removeFields,
   reprojectVector,
   unionVectors
@@ -97,7 +97,7 @@ vectorProximityFromUnion union_ prox_out = do
   dummy_out <- addDummyField union dummy_out_
 
   let rast_out_ = Raster $ appendFilename "_rast" $ path dummy_out
-  rast_out <- rasterizePower dummy_out rast_out_
+  rast_out <- rasterizeVector dummy_out rast_out_
 
   rasterProximity rast_out prox_out
 

@@ -5,7 +5,6 @@ import System.FilePath ((</>))
 import Utils (
   guardFileF,
   quoteDouble,
-  quoteSingle,
   runCmd,
  )
 
@@ -108,8 +107,8 @@ bufferBorder out_dir border = do
   let border_buff_out = Vector $ out_dir </> "border_reproj_buff.shp"
   bufferVector 100000 reproj_out border_buff_out
 
-rasterizePower :: Vector -> Raster -> IO Raster
-rasterizePower (Vector i) (Raster out) = do
+rasterizeVector :: Vector -> Raster -> IO Raster
+rasterizeVector (Vector i) (Raster out) = do
   guardFileF Raster out $
     runCmd
       "gdal_rasterize"
