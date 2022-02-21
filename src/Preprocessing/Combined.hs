@@ -20,7 +20,7 @@ import Preprocessing.Core.Vector (
   rasterizePower,
   removeFields,
   reprojectVector,
-  unionVectors,
+  unionVectors
  )
 import System.Directory (removePathForcibly)
 import System.FilePath ((</>))

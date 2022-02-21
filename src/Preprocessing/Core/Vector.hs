@@ -100,36 +100,6 @@ removeFields (Vector i) (Vector out) = do
       , "FIELDS=\"id\""
       ]
 
-vectorize :: Raster -> Vector -> IO Vector
-vectorize (Raster i) (Vector out) = do
-  guardFileF Vector out $
-    runCmd
-      "gdal_polygonize.py"
-      [ quoteDouble i
-      , quoteDouble out
-      , "-b"
-      , "1"
-      , "-f"
-      , "\"GPKG\""
-      , "OUTPUT"
-      , "DN"
-      ]
-
-extractVectorAttribute :: String -> String -> Vector -> Vector -> IO Vector
-extractVectorAttribute field value (Vector i) (Vector out) = do
-  guardFileF Vector out $
-    runCmd
-      "qgis_process"
-      [ "run"
-      , "native:extractbyattribute"
-      , "--"
-      , "FIELD=" <> quoteSingle field
-      , "OPERATOR=0" -- '='
-      , "VALUE=" <> quoteSingle value
-      , "INPUT=" <> quoteDouble i
-      , "OUTPUT=" <> quoteDouble out
-      ]
-
 bufferBorder :: String -> Vector -> IO Vector
 bufferBorder out_dir border = do
   let reproj_out_ = Vector $ out_dir </> "border_reproj.shp"
