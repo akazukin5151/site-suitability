@@ -65,12 +65,12 @@ quoteDouble s = "\"" <> s <> "\""
 
 runCmd :: String -> [String] -> IO ()
 runCmd process args = do
-  print $ unwords $ [process] <> args
+  putStrLn $ unwords $ [process] <> args
   callCommand $ unwords $ [process] <> args
 
 readCmd :: FilePath -> [String] -> IO (ExitCode, String, String)
 readCmd process args = do
-  print $ unwords $ [process] <> args
+  putStrLn $ unwords $ [process] <> args
   readProcessWithExitCode process args ""
 
 -- mkStdName "out/y/preprocessed/x.shp" == "out/y/std/x_std.shp"
