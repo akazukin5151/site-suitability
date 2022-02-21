@@ -17,7 +17,7 @@ ITERATOR = [
     for dir_ in Path('../out/').iterdir()
     if dir_.name in DIRS
     for file in dir_.rglob("*")
-    if file.name.endswith('.tif')
+    if file.name.endswith('.tif') and 'internal_steps' not in str(file)
 ]
 
 
