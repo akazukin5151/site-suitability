@@ -2,17 +2,23 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
-# plot_shared_histograms :: [a] -> (a -> DataFrame float) -> (a -> str) -> str -> ()
 # (note: type signatures do not show the IO monad, so any type here can do IO)
-def plot_shared_histograms(iterator, preprocess_item, get_title, outfile):
+def plot_shared_histograms(
+    iterator: '[a]',
+    preprocess_item: '(a -> DataFrame float)',
+    get_title: '(a -> str)',
+    outfile: str,
+    xlabel: str = 'Suitability score'
+):
     '''
-    For every value `A` in iterator `i`:
+    For every value `A` in iterator `iterator`:
     1) Apply the `preprocess_item` function to `A`, giving a DataFrame
        with a column `'x'` containing floats
     2) Plot a histogram of that column in a separate subplot with a common y-axis
     3) Set the title of the histogram to the `get_title` function applied to `A`,
        which returns a string
-    4) Save the output to file `outfile`
+    4) Set the xlabel of the histogram to `xlabel`
+    5) Save the output to file `outfile`
     '''
     _, axes = plt.subplots(
         ncols=2, nrows=3,
@@ -27,7 +33,7 @@ def plot_shared_histograms(iterator, preprocess_item, get_title, outfile):
 
     axes[0].set_ylabel('Frequency')
     for ax in axes:
-        ax.set_xlabel('Suitability score')
+        ax.set_xlabel(xlabel)
 
     plt.tight_layout()
     plt.savefig(outfile)
