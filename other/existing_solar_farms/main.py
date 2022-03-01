@@ -3,8 +3,9 @@ import matplotlib.pyplot as plt
 
 gdf = gpd.read_file('../../../data/existing solar farms/osm/arizona_solar.geojson')
 
-az = gpd.read_file('../../out/suh/az border.shp')
+az = gpd.read_file('../../data/borders/study_area.shp')
 
+print(az.crs)
 assert gdf.crs == az.crs
 
 gdf_clipped = gdf.clip(az)
