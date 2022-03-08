@@ -19,8 +19,8 @@ with rio.open('data/residential_prox.tif') as f:
 show(prox, ax=ax1, cmap='Greens')
 
 # manually figured out with trial and error
-ax1.set_xlim((-3850, 21000))
-ax1.set_ylim((26000, -5580))
+ax1.set_xlim((-4100, 22000))
+ax1.set_ylim((26000, -4880))
 
 cmap = cm.get_cmap('tab10')
 dists = list(reversed(['1000', '5000', '10000', '50000']))
