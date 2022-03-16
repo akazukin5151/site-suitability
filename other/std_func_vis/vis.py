@@ -23,8 +23,8 @@ def sigmoid(m, s):
     # There's a ZeroDivisionError even though nothing is zero...
     return lambda x: 1/(1+(x/m)**s)
 
-def gaussian(b, m):
-    return lambda x: np.exp( (np.log(0.5)*(x-b)**2) / (m-b)**2 )
+def gaussian(b, m, d):
+    return lambda x: np.exp(np.log(0.5) * (((x / d) - b) ** 2) / (m-b)**2)
 
 def linearL(min_, max_):
     def inner(x):
@@ -44,29 +44,35 @@ def linearS(min_, max_):
         return (-x + max_)/(max_ - min_)
     return inner
 
-x = np.linspace(0,1,100)
 
-# y1 and y2 auto broadcasts, but not y3 and y4
-y1 = sigmoid(0.5, -5)(x)
-y2 = gaussian(1, 0.5)(x)
-y3 = list(map(linearL(0.2, 0.8), x))
-y4 = list(map(linearS(0.2, 0.8), x))
+def main():
+    x = np.linspace(0,1,100)
 
-plt.plot(x, y1, label='sigmoid(0.5, -5)')
-plt.plot(x, y2, label='gaussian(1, 0.5)')
-plt.plot(x, y3, label='linearL(0.2, 0.8)')
-plt.plot(x, y4, label='linearS(0.2, 0.8)')
-plt.legend()
-plt.xlabel('Range-standardized value of raster cell')
-plt.ylabel('Standardized value (suitability score) for this raster')
-plt.savefig('vis.png')
+    # y1 and y2 auto broadcasts, but not y3 and y4
+    y1 = sigmoid(0.5, -5)(x)
+    y2 = gaussian(1, 0.5, 1)(x)
+    y3 = list(map(linearL(0.2, 0.8), x))
+    y4 = list(map(linearS(0.2, 0.8), x))
 
-plt.close()
-plt.plot(x, y1, label='S-curve')
-plt.plot(x, y3, label='Linear with clamps')
-plt.legend()
-plt.xlabel('Range-standardized value of raster cell')
-plt.ylabel('Standardized value (suitability score) for this raster')
-plt.gca().spines['right'].set_visible(False)
-plt.gca().spines['top'].set_visible(False)
-plt.savefig('simplified.png')
+    plt.plot(x, y1, label='sigmoid(0.5, -5)')
+    plt.plot(x, y2, label='gaussian(1, 0.5)')
+    plt.plot(x, y3, label='linearL(0.2, 0.8)')
+    plt.plot(x, y4, label='linearS(0.2, 0.8)')
+    plt.legend()
+    plt.xlabel('Range-standardized value of raster cell')
+    plt.ylabel('Standardized value (suitability score) for this raster')
+    plt.savefig('vis.png')
+
+    plt.close()
+    plt.plot(x, y1, label='S-curve')
+    plt.plot(x, y3, label='Linear with clamps')
+    plt.legend()
+    plt.xlabel('Range-standardized value of raster cell')
+    plt.ylabel('Standardized value (suitability score) for this raster')
+    plt.gca().spines['right'].set_visible(False)
+    plt.gca().spines['top'].set_visible(False)
+    plt.savefig('simplified.png')
+
+
+if __name__ == '__main__':
+    main()

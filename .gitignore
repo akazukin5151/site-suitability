@@ -26,3 +26,4 @@ other/results_with_existing/data
 configs/run.txt
 
 other/zonal_statistics/out/shp
+other/std_func_vis/__pycache__
