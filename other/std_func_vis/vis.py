@@ -18,6 +18,7 @@ for that layer.
 
 import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
 
 def sigmoid(m, s):
     # There's a ZeroDivisionError even though nothing is zero...
@@ -54,6 +55,7 @@ def main():
     y3 = list(map(linearL(0.2, 0.8), x))
     y4 = list(map(linearS(0.2, 0.8), x))
 
+    plt.figure(figsize=(8, 7))
     plt.plot(x, y1, label='sigmoid(0.5, -5)')
     plt.plot(x, y2, label='gaussian(1, 0.5)')
     plt.plot(x, y3, label='linearL(0.2, 0.8)')
@@ -61,6 +63,7 @@ def main():
     plt.legend()
     plt.xlabel('Range-standardized value of raster cell')
     plt.ylabel('Standardized value (suitability score) for this raster')
+    sns.despine()
     plt.savefig('vis.png')
 
     plt.close()
