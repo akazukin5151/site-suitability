@@ -1,7 +1,6 @@
 from vis import sigmoid, linearS
-import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns
+import factor
 
 def main():
     # get by running hist_values.r (remove the first value in breaks)
@@ -18,33 +17,18 @@ def main():
         285,134,75,56,4,1,
     ]
 
-    _, ax1 = plt.subplots(figsize=(10, 8))
-    sns.distplot(
-        breaks,
-        hist_kws={
-            "weights": counts,
-            "edgecolor": "black"
-        },
-        bins=len(breaks),
-        kde=False,
-        ax=ax1
-    )
-    ax1.set_xlim((0, 80))
-    ax1.set_ylabel('Frequency')
-    ax1.set_xlabel('Slope (angular degrees)')
-    #plt.show()
-    ax2 = ax1.twinx()
+    xlim = (0, 50)
+    xlab = 'Slope (angular degrees)'
+    x = np.linspace(0, 50, 500)
+    outfile = 'slope.png'
 
-    x = np.linspace(0, 80, 100)
+    def plot(ax2):
+        y1 = sigmoid(9, 3)(x)
+        y2 = list(map(linearS(3, 10), x))
+        ax2.plot(x, y1, label='sigmoid(9, 3)')
+        ax2.plot(x, y2, label='linearS(3, 10)')
 
-    y1 = sigmoid(9, 3)(x)
-    y2 = list(map(linearS(3, 10), x))
-
-    ax2.plot(x, y1, label='sigmoid(9, 3)')
-    ax2.plot(x, y2, label='linearS(3, 10)')
-    ax2.set_ylabel('Suitability score')
-    plt.legend()
-    plt.savefig('slope.png')
+    factor.main(breaks, counts, xlim, xlab, outfile, plot)
 
 
 if __name__ == '__main__':
