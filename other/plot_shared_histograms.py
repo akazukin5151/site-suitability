@@ -8,7 +8,9 @@ def plot_shared_histograms(
     preprocess_item: '(a -> DataFrame float)',
     get_title: '(a -> str)',
     outfile: str,
-    xlabel: str = 'Suitability score'
+    xlabel: str = 'Suitability score',
+    ncols: int = 2,
+    nrows: int = 3
 ):
     '''
     For every value `A` in iterator `iterator`:
@@ -21,7 +23,7 @@ def plot_shared_histograms(
     5) Save the output to file `outfile`
     '''
     _, axes = plt.subplots(
-        ncols=2, nrows=3,
+        ncols=ncols, nrows=nrows,
         sharey=True, gridspec_kw={'wspace': 0}, figsize=(10, 8)
     )
     axes = axes.flatten()
