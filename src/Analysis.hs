@@ -49,8 +49,7 @@ standardizeQGIS calc_expr (Raster i) (Raster out) = do
       , "CELLSIZE=0"
       , -- , "CRS='EPSG:4326'"
         "EXPRESSION=" <> quoteSingle (calc_expr $ quoteDouble $ i <> "@1")
-      , -- extents seem to be optional
-        "OUTPUT=" <> quoteSingle out
+      , "OUTPUT=" <> quoteSingle out
       , "LAYERS=" <> quoteDouble i
       ]
 
@@ -74,7 +73,7 @@ abstractRangeStandardize calc_expr (Raster i) (Raster out) = do
       , "gdal:rastercalculator"
       , "--"
       , "INPUT_A=" <> quoteSingle i
-      , "BAND_A=1" -- hope this is a constant...
+      , "BAND_A=1"
       , "FORMULA=" <> quoteSingle (calc_expr min' max')
       , "OUTPUT=" <> quoteSingle out
       , "RTYPE=5" -- float32

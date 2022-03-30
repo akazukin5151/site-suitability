@@ -112,8 +112,6 @@ data CriterionConfig = CriterionConfig
   }
   deriving (Generic, Show)
 
--- TODO: Do I need to write a custom implementation for this
--- if I already have one for FromJSON?
 instance ToJSON CriterionConfig where
   toEncoding = genericToEncoding customOptions
 

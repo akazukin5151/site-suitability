@@ -92,9 +92,7 @@ finalRasterCalculator :: [Raster] -> Raster -> IO Raster
 finalRasterCalculator =
   multiplyRasters
     [ "CRS='EPSG:4326'"
-    -- TODO get extents; got it from insolation, which should be same as border
     -- extents optional
-    -- , "EXTENT='-114.808333333,-109.050000000,31.333333333,37.000000000'"
     ]
 
 -- TODO: copied & modified from multiplyRasters

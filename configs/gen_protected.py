@@ -1,3 +1,4 @@
+"""a script to generated watson_protected_*.json"""
 import json
 import numpy as np
 
