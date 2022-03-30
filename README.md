@@ -2,8 +2,45 @@
 
 Program to automate site suitability / site selection analysis
 
-- Modular: if one step fails and aborts the program, once you fix it you can simply re-run the program. it will skip calculating existing files and continue as if it was never aborted
-- Not a black box: every pre-processing, standardization, and weighting step is given back. not a black box where you give it a bunch of things and it gives you an answer.
+# Features
+
+- Transparent: open source means the code can be inspected and audited, especially the use of inputs and function parameters
+- Reproducible: the configuration file that describes the calculations are independent of the code that does the actual work, so it can be released without releasing the backend code.
+- Modular: if one step fails and aborts the program, once you fix it you can simply re-run the program. It will skip calculating existing files and continue as if it was never aborted
+- Not a black box: every pre-processing, standardization, and weighting step is given back.
+
+## Type safety
+
+Helps distinguishes between vector and raster files *at compile time*. While it does not do any runtime verification, it is easier to see if you made a mistake. For example, `doRasterOperation (Raster "roads.shp")` is obviously wrong and `doVectorOperation (Vector "solar_radiation.tif")` is obviously wrong too.
+
+Now, `doRasterOperation "roads.shp"` can also be spotted relatively easily, but what about:
+
+```hs
+layer = "roads.shp"
+doRasterOperation layer
+-- many lines later
+doVectorOperation layer
+```
+
+Sure, you can name things like:
+
+```hs
+rasterLayer = "roads.shp"
+doRasterOperation rasterLayer
+-- many lines later
+doVectorOperation rasterLayer
+```
+
+But why not have the compiler catch it for you at compile time, before your program even runs?
+
+```hs
+layer = Raster "roads.shp"
+-- doRasterOperation :: Raster -> IO ()
+doRasterOperation layer
+-- many lines later
+-- doVectorOperation :: Vector -> IO ()
+doVectorOperation layer  -- compile-time error, layer :: Raster but expected Vector
+```
 
 # Installation
 
@@ -28,6 +65,8 @@ For example commands, see [example_ci.yml](example_ci.yml)
 
 # Usage
 
+Note: these are instructions to replicate the Arizona case study. To use other data sets, just modify the configuration
+
 ## Prerequisites
 
 Download the datasets and do some slight pre-processing. See [README_datasets.md](README_datasets.md) and [data/README.md](./data/README.md).
@@ -44,9 +83,9 @@ python download_roads.py
 
 ## Running
 
-(Optional) edit `configs/run.txt`. Put the names of the configs you want to run on a new line. Do not type extensions (`.json`)
+Edit `configs/run.txt`. Put the names of the configs you want to run on a new line. Do not type extensions (`.json`)
 
-**If you're using (ana)conda, please disable it temporarily**
+**If your shell's python is from (ana)conda but QGIS is not installed with (ana)conda, please disable it temporarily**
 Use `conda deactivate`
 (To enable it back, type `conda activate base`, where base is your environment name)
 
@@ -55,6 +94,10 @@ Therefore the command to compile and run would be like:
 ```
 conda deactivate && stack build && stack exec site-suitability
 ```
+
+# Customizing
+
+See [./configs/README.md](./configs/README.md) for documentation on how to edit or write a configuration file
 
 # Integration tests
 
