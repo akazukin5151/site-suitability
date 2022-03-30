@@ -32,21 +32,24 @@ residentialConstraint cons config_name _ is o@(Raster out) = do
               0 -> do
                 let num_file x = Raster $ step_dir </> (x <> ".tif")
                 let expr num i = i <> "!= " <> num
-                out1 <- standardizeQGIS (expr "22") land_use_in $ num_file "22"
-                out2 <- standardizeQGIS (expr "23") land_use_in $ num_file "23"
-                out3 <- standardizeQGIS (expr "24") land_use_in $ num_file "24"
+                --out1 <- standardizeQGIS (expr "22") land_use_in $ num_file "22"
+                --out2 <- standardizeQGIS (expr "23") land_use_in $ num_file "23"
+                --out3 <- standardizeQGIS (expr "24") land_use_in $ num_file "24"
                 case c_direction cons of
-                  MoreBetter -> finalRasterCalculator [out1, out2, out3] o
+                  MoreBetter -> do
+                    -- finalRasterCalculator [out1, out2, out3] o
+                    standardizeQGIS (expr "24") land_use_in o
                   LessBetter -> do
                     let tmp_ = Raster $ step_dir </> "tmp.tif"
-                    tmp <- finalRasterCalculator [out1, out2, out3] tmp_
+                    --tmp <- finalRasterCalculator [out1, out2, out3] tmp_
+                    tmp <- standardizeQGIS (expr "24") land_use_in tmp_
                     standardize "0*(A==1)+1*(A==0)" tmp o
               d -> do
                 -- Copied from residentialProximity
                 -- reproject to meters
                 let residential_out_ = Raster $ step_dir </> "residential_only.tif"
                 let expr =
-                      "0*logical_or(logical_or(A!=22, A!=23), A!=24) + 1*logical_or(logical_or(A==22, A==23), A==24)"
+                      "0*(A!=24) + 1*(A==24)"
                 residential_out <- standardize expr land_use_in residential_out_
 
                 let reproj_out_ = Raster $ step_dir </> "residential_reproj.tif"

@@ -74,7 +74,7 @@ residentialProximity config_name border_output_file is (Raster out) = do
 
             let residential_out_ = Raster $ step_dir </> "residential_only.tif"
             let expr =
-                  "0*logical_or(logical_or(A!=22, A!=23), A!=24) + 1*logical_or(logical_or(A==22, A==23), A==24)"
+                  "0*(A!=24) + 1*(A==24)"
             residential_out <- standardize expr land_use_out residential_out_
 
             -- reproject to meters
