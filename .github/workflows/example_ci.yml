@@ -12,6 +12,7 @@ on:
 
 jobs:
   maximize_build_space:
+    runs-on: ubuntu-latest
     steps:
     - name: Maximize build space
       uses: easimon/maximize-build-space@master
