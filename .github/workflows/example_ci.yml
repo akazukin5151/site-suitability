@@ -11,14 +11,7 @@ on:
   workflow_dispatch
 
 jobs:
-  compile:
-    runs-on: ubuntu-latest #${{ matrix.os }}
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        include:
-#          - os: ubuntu-latest
-#          - os: macos-latest
+  maximize_build_space:
     steps:
     - name: Maximize build space
       uses: easimon/maximize-build-space@master
@@ -29,30 +22,37 @@ jobs:
         remove-android: 'true'
         remove-haskell: 'true'
 
+    - name: Check free space
+      run: |
+        echo "Free space:"
+        df -h
+
     - name: Checkout
       uses: actions/checkout@v2
 
-    - name: Check free space
-      run: |
-          echo "Free space:"
-          df -h
-
+  compile:
+    runs-on: ubuntu-latest #${{ matrix.os }}
+    needs: [maximize_build_space]
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        include:
+#          - os: ubuntu-latest
+#          - os: macos-latest
     - name: Compile
       run: stack install
 
   dependencies:
     runs-on: ubuntu-latest
+    needs: [maximize_build_space]
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
     - name: Download dependencies
       run: ./download_dependencies.sh
 
   download_datasets:
     runs-on: ubuntu-latest
+    needs: [maximize_build_space]
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
     - name: Download datasets
       run: |
         cd data
@@ -61,10 +61,8 @@ jobs:
 
   process_datasets:
     runs-on: ubuntu-latest
-    needs: [dependencies, download_datasets]
+    needs: [dependencies, download_datasets, maximize_build_space]
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
     - name: Process datasets
       run: |
         cd data
@@ -73,10 +71,8 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    needs: [compile, dependencies, download_datasets, process_datasets]
+    needs: [compile, dependencies, download_datasets, process_datasets, maximize_build_space]
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
     - name: Run program
       run: |
         #echo 'asakareh\nasakareh_improved\nsuh\nsuh_improved\nwatson' > configs/run.txt
